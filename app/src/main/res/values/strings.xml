@@ -1,0 +1,36 @@
+<resources>
+    <string name="app_name">InstaSaver</string>
+    <string name="home">Home</string>
+    <string name="instagram">Instagram</string>
+    <string name="downloads">Downloads</string>
+    <string name="omnicoder_caption">Do you agree?? Double Tap ❤️ and Follow @theomnicoder for Daily Funny Programming and Computer Science Memes󰞵 ➡️Follow: @theomnicoder ➡️Follow: @theomnicoder ➡️Follow: @theomnicoder . . . . . #datastructure #algorithm #dsa #programminglanguage #javadeveloper #webprogramming #softwaretesting #programmingislife #androiddeveloper #fullstackdeveloper #programmingjokes #programminghumor #codingpics #codingmemes #softwaredevelopment #programmingmemes #programmerslife #developerlife #codingisfun #softwareengineer #softwareengineering #programminglife #programmerlife #html5 #codingproblems #programmersday #mobiledeveloper</string>
+    <string name="open_in_instagram">Open In Instagram</string>
+    <string name="delete">Delete</string>
+    <string name="view_more">View More</string>
+    <string name="title_activity_search_stories">SearchStoriesActivity</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+    <string name="edittext_hint">Enter username or paste story url</string>
+    <string name="dp_hint">Enter username or paste profile url</string>
+    <string name="hello_first_fragment">Hello first fragment</string>
+    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+    <string name="searching">Searching…</string>
+    <string name="download">Download</string>
+    <string name="story_downloader">Story Downloader</string>
+
+    <string name="title_grant_Permission">Grant Permission</string>
+    <string name="message_grant_Permission">Please grant all permissions to access additional functionality.</string>
+    <string name="goto_setting">Go to setting</string>
+    <string name="cancel">Cancel</string>
+    <string name="logged_in_check">Click here After you are logged in</string>
+    <string name="imageView">ImageView</string>
+    <string name="ig_title">Hold On!</string>
+    <string name="ig_desc">Unfortunately Instagram don\'t allow downloading more than 3-4 posts at once without login.</string>
+    <string name="ig_suggest">You can login with a instagram account or you can wait 12hr to download again without login.</string>
+    <string name="ig_note">Note: We do no store your login information. But if you are still worried, You can just use any of your secondary or temporary instagram account. It not necessary to use your main account</string>
+    <string name="ig_login">Login with Instagram</string>
+    <string name="ig_wait">I will wait</string>
+</resources>
