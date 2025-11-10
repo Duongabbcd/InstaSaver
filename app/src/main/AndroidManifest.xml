@@ -19,19 +19,39 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.InstaSaver"
-        tools:targetApi="31" >
+        tools:targetApi="31">
 
-        <activity android:name=".screen.splash.SplashActivity"
-            android:exported="true"/>
+        <activity
+            android:name=".screen.splash.SplashActivity"
+            android:exported="true" />
 
-        <activity android:name=".screen.login.RequestLoginActivity"
-            android:exported="true"/>
+        <activity
+            android:name=".screen.login.RequestLoginActivity"
+            android:exported="true" />
 
-        <activity android:name=".screen.login.InstagramLoginActivity"
-            android:exported="true"/>
+        <activity
+            android:name=".screen.login.InstagramLoginActivity"
+            android:exported="true" />
 
-        <activity android:name=".screen.view.ViewPostActivity"
-            android:exported="true"/>
+        <activity
+            android:name=".screen.view.post.ViewPostActivity"
+            android:exported="true" />
+
+        <activity
+            android:name=".screen.view.story.ViewStoryActivity"
+            android:exported="true" />
+
+        <activity
+            android:name=".screen.download.DownloadStoryActivity"
+            android:exported="true" />
+
+        <activity
+            android:name=".screen.view.story.WatchStoriesActivity"
+            android:exported="true" />
+
+        <activity
+            android:name=".screen.view.ViewDPActivity"
+            android:exported="true" />
 
         <activity
             android:name="com.ezt.video.instasaver.screen.home.MainActivity"

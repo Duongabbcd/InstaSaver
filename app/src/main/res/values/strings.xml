@@ -33,4 +33,12 @@
     <string name="ig_note">Note: We do no store your login information. But if you are still worried, You can just use any of your secondary or temporary instagram account. It not necessary to use your main account</string>
     <string name="ig_login">Login with Instagram</string>
     <string name="ig_wait">I will wait</string>
+    <string name="no_stories_found">No Stories Found!</string>
+    <string name="downloading_media">Downloading media....</string>
+    <string name="recent_searches">Recent Searches</string>
+    <string name="download_desc">Your Downloaded posts will appear here.</string>
+    <string name="caption">Caption</string>
+    <string name="copy_all">Copy All</string>
+    <string name="copy_hashtags">Copy Hashtags</string>
+    <string name="copy_username">Copy Username</string>
 </resources>

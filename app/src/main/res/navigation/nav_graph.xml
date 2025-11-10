@@ -20,7 +20,7 @@
     </fragment>
     <fragment
         android:id="@+id/downloads"
-        android:name="com.ezt.video.instasaver.screen.home.fragment.DownloadsFragment"
+        android:name="com.ezt.video.instasaver.screen.home.download.DownloadsFragment"
         android:label="downloads_fragment"
         tools:layout="@layout/fragment_downloads" />
     <fragment
@@ -30,7 +30,7 @@
         tools:layout="@layout/fragment_web_view" />
     <fragment
         android:id="@+id/storyFragment"
-        android:name="com.ezt.video.instasaver.screen.home.fragment.StoryFragment"
+        android:name="com.ezt.video.instasaver.screen.home.story.StoryFragment"
         android:label="StoryFragment" >
         <argument
             android:name="cookie"
@@ -39,7 +39,7 @@
     </fragment>
     <fragment
         android:id="@+id/DPViewerFragment"
-        android:name="com.ezt.video.instasaver.screen.home.fragment.DPViewerFragment"
+        android:name="com.ezt.video.instasaver.screen.home.dpviewer.DPViewerFragment"
         android:label="dp_viewer_fragment"
         tools:layout="@layout/fragment_dp_viewer" >
         <argument

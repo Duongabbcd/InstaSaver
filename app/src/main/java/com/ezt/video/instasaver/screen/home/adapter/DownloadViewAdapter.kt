@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.ezt.video.instasaver.R
 import com.ezt.video.instasaver.databinding.ItemDownloadViewBinding
 import com.ezt.video.instasaver.local.Post
-import com.ezt.video.instasaver.screen.view.ViewPostActivity
+import com.ezt.video.instasaver.screen.view.post.ViewPostActivity
 import com.squareup.picasso.Picasso
 
 class DownloadViewAdapter(private val load: Boolean, private val allPosts: List<Post>) : RecyclerView.Adapter<DownloadViewAdapter.DownloadViewHolder>(){
