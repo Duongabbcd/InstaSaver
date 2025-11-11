@@ -14,7 +14,8 @@ object Constants {
     const val VIDEO="GraphVideo"
     const val REEL_MEDIA="https://i.instagram.com/api/v1/feed/reels_media/?reel_ids=%s"
     const val STORY_DOWNLOAD="https://i.instagram.com/api/v1/feed/user/%s/story/"
-    const val USER_AGENT="Instagram 76.0.0.15.395 Android (24/7.0; 640dpi; 1440x2560; samsung; SM-G930F; herolte; samsungexynos8890; en_US; 138226743)"
+    const val USER_AGENT =
+        "Instagram 254.0.0.19.109 Android (33/13; 420dpi; 1080x2400; Google; Pixel 7; panther; gs201; en_US; 450263394)"
     const val REEL_TRAY="https://i.instagram.com/api/v1/feed/reels_tray/"
     const val SEARCH_USER="https://www.instagram.com/web/search/topsearch/?context=blended&query=%s&rank_token=0.13538577328414725&include_reel=false"
     const val STORY_HIGHLIGHTS="https://i.instagram.com/api/v1/highlights/%s/highlights_tray/"

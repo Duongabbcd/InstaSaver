@@ -7,10 +7,12 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.core.content.ContextCompat
 import com.ezt.video.instasaver.base.BaseActivity
 import com.ezt.video.instasaver.customview.StoriesProgressView
 import com.ezt.video.instasaver.databinding.ActivityWatchStoriesBinding
@@ -56,11 +58,10 @@ class WatchStoriesActivity :
                     reelTray.items[counter].downloaded = true
                     loadingDialog.dismiss()
                     binding.stories.resume()
-                    Toast.makeText(context, "Download complete", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, resources.getString(R.string.download_complete), Toast.LENGTH_SHORT).show()
                 }
             }
         }
-//        registerReceiver(onDownloadComplete, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
 
     }
 
@@ -108,7 +109,7 @@ class WatchStoriesActivity :
             loadingDialog.show()
             val item = reelTray.items[counter]
             if (item.downloaded) {
-                Toast.makeText(this, "Already Downloaded", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, resources.getString(R.string.already_downloaded), Toast.LENGTH_SHORT).show()
             } else {
                 viewModel.downloadStory(
                     Story(
@@ -206,5 +207,21 @@ class WatchStoriesActivity :
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        val intentFilter = IntentFilter()
+        intentFilter.addAction(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(onDownloadComplete, intentFilter, RECEIVER_EXPORTED)
+        } else {
+            ContextCompat.registerReceiver(
+                this@WatchStoriesActivity,
+                onDownloadComplete,
+                intentFilter,
+                ContextCompat.RECEIVER_EXPORTED
+            )
 
+        }
+    }
+    
 }

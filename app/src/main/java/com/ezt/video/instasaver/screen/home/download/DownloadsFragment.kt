@@ -17,17 +17,19 @@ class DownloadsFragment : BaseFragment<FragmentDownloadsBinding>(FragmentDownloa
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.downloadView.adapter = DownloadViewAdapter2()
         val ctx = context ?: return
         val layoutManager= LinearLayoutManager(ctx, LinearLayoutManager.VERTICAL, true)
         layoutManager.stackFromEnd=true
         binding.downloadView.layoutManager = layoutManager
+        downloadViewAdapter2 = DownloadViewAdapter2()
+        binding.downloadView.adapter = downloadViewAdapter2
     }
 
     override fun onResume() {
         super.onResume()
 
         downloadViewModel.allPosts.observe(viewLifecycleOwner) {
+            println("FragmentDownloadsBinding: $it")
             downloadViewAdapter2.submitList(it)
         }
     }

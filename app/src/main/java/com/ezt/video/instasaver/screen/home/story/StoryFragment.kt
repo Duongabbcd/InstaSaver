@@ -17,6 +17,8 @@ import com.ezt.video.instasaver.screen.download.DownloadStoryActivity
 import com.ezt.video.instasaver.screen.home.dpviewer.adapter.StorySearchViewAdapter
 import com.ezt.video.instasaver.screen.home.story.adapter.RecentViewAdapter
 import com.ezt.video.instasaver.screen.home.story.adapter.ReelTrayViewAdapter
+import com.ezt.video.instasaver.utils.Common.gone
+import com.ezt.video.instasaver.utils.Common.visible
 import com.ezt.video.instasaver.viewmodel.StoryViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -31,16 +33,24 @@ class StoryFragment : BaseFragment<FragmentStoryBinding>(FragmentStoryBinding::i
         val args: StoryFragmentArgs by navArgs()
         cookies = args.cookie
         storyViewModel.fetchReelTray(cookies)
-        storyViewModel.getRecentSearches()
 
         observeData()
         setOnClickListeners()
         binding.apply {
+            recentView.setOnClickListener {
+                hideKeyBoard(recentView)
+            }
+            downloadView.setOnClickListener {
+                hideKeyBoard(downloadView)
+            }
+
+            loading.visible()
             recentView.layoutManager =
                 LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
 
             editText.doOnTextChanged { text, _, _, count ->
                 if (count > 0) {
+                    storyViewModel.getRecentSearches()
                     storyViewModel.searchUser(text.toString(), cookies)
                     binding.progressBar.visibility = View.VISIBLE
                     binding.searching.visibility = View.VISIBLE
@@ -74,7 +84,7 @@ class StoryFragment : BaseFragment<FragmentStoryBinding>(FragmentStoryBinding::i
         }
 
         storyViewModel.recents.observe(viewLifecycleOwner) {
-            binding.recentView.adapter = RecentViewAdapter(context, it, cookies)
+            binding.recentView.adapter = RecentViewAdapter( it, cookies)
         }
 
         storyViewModel.reelTray.observe(viewLifecycleOwner) {
@@ -110,5 +120,11 @@ class StoryFragment : BaseFragment<FragmentStoryBinding>(FragmentStoryBinding::i
         recyclerView.layoutManager =
             LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
         recyclerView.adapter = ReelTrayViewAdapter(reelTrays, cookies)
+        binding.loading.gone()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        storyViewModel.getRecentSearches()
     }
 }

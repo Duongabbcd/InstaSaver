@@ -1,5 +1,7 @@
 package com.ezt.video.instasaver.base
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
@@ -105,7 +107,6 @@ abstract class BaseActivity<T : ViewBinding>(private val inflater: Inflate<T>) :
             finish()
         }
     }
-
 
     companion object {
         private var TAG = BaseActivity::class.java.simpleName

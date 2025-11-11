@@ -13,8 +13,8 @@ import retrofit2.http.Path
 import retrofit2.http.Url
 
 interface InstagramAPI {
-    @GET("media/{mediaID}/info")
-    suspend fun getData(@Path("mediaId") mediaId: Long, @Header("Cookie") map: String, @Header("User-Agent") userAgent: String) : InstagramResponse
+    @GET("media/{mediaId}/info")
+    suspend fun getData(@Path("mediaId") mediaId: Long, @Header("Cookie") map :String,@Header("User-Agent") userAgent:String): InstagramResponse
 
     @GET
     suspend fun getData(@Url url: String, @Header("Cookie") map: String, @Header("User-Agent") userAgent: String) : InstagramResponse

@@ -25,7 +25,11 @@ class WebViewFragment : BaseFragment<FragmentWebViewBinding>(FragmentWebViewBind
         myWebView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView, url: String) {
                 super.onPageFinished(myWebView, url)
-                Toast.makeText(context, "Done!", Toast.LENGTH_SHORT).show()
+              try {
+                  Toast.makeText(context, "Done!", Toast.LENGTH_SHORT).show()
+              } catch (e: Exception) {
+                  e.printStackTrace()
+              }
             }
 
         }

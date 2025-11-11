@@ -33,6 +33,7 @@ class HomeViewModel @Inject constructor(private val instagramRepository: Instagr
             }else{
                 postExits.postValue(true)
             }
+            println("downloadIdList: $postDoesNotExits and $downloadIdList")
             downloadID.postValue(downloadIdList)
         }
     }

@@ -6,18 +6,22 @@ import android.content.BroadcastReceiver
 import android.content.ContentUris
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.media.MediaPlayer
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.View
 import android.widget.MediaController
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.core.content.ContextCompat
 import com.ezt.video.instasaver.base.BaseActivity
 import com.ezt.video.instasaver.R
 import com.ezt.video.instasaver.databinding.ActivityViewStoryBinding
 import com.ezt.video.instasaver.model.Story
+import com.ezt.video.instasaver.screen.view.story.WatchStoriesActivity
 import com.ezt.video.instasaver.utils.sdk29AndUp
 import com.ezt.video.instasaver.viewmodel.StoryViewModel
 import com.squareup.picasso.Picasso
@@ -104,13 +108,12 @@ class ViewStoryActivity :
                 if (id == downloadID) {
                     downloaded = true
                     loadingDialog.dismiss()
-                    Toast.makeText(context, "Download complete", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, resources.getString(R.string.download_complete), Toast.LENGTH_SHORT).show()
                 }
 
             }
         }
 
-//        registerReceiver(onComplete, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
     }
 
 
@@ -195,6 +198,22 @@ class ViewStoryActivity :
         }
     }
 
+    override fun onStart() {
+        super.onStart()
+        val intentFilter = IntentFilter()
+        intentFilter.addAction(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(onComplete, intentFilter, RECEIVER_EXPORTED)
+        } else {
+            ContextCompat.registerReceiver(
+                this@ViewStoryActivity,
+                onComplete,
+                intentFilter,
+                ContextCompat.RECEIVER_EXPORTED
+            )
+
+        }
+    }
 
     override fun onDestroy() {
         super.onDestroy()

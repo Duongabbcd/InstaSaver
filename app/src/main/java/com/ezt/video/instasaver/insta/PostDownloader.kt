@@ -14,21 +14,32 @@ import com.ezt.video.instasaver.remote.network.InstagramAPI
 import com.ezt.video.instasaver.utils.Constants
 import javax.inject.Inject
 
-class PostDownloader @Inject constructor(private val context: Context,private val instagramAPI: InstagramAPI, private val postDao:PostDao) {
+class PostDownloader @Inject constructor(
+    private val context: Context,
+    private val instagramAPI: InstagramAPI,
+    private val postDao: PostDao
+) {
 
-    suspend fun fetchDownloadLink(url:String,map: String): MutableList<Long>{
+    suspend fun fetchDownloadLink(url: String, map: String): MutableList<Long> {
         try {
             val postID = getPostCode(url)
-            val items: Items = if(postID.length>23){
-                instagramAPI.getData(Constants.PRIVATE_POST_URL.format(postID),map,Constants.USER_AGENT).items[0]
-            }else{
+            val items: Items = if (postID.length > 23) {
+                instagramAPI.getData(
+                    Constants.PRIVATE_POST_URL.format(postID),
+                    map,
+                    Constants.USER_AGENT
+                ).items[0]
+            } else {
                 val mediaId = getMediaId(postID)
-                val logd="$mediaId \n $map \n ${Constants.USER_AGENT} \n $url"
-                Log.d("tagg",logd)
-                instagramAPI.getData(mediaId,map,Constants.USER_AGENT).items[0]
+                val logd = "$mediaId \n $map \n ${Constants.USER_AGENT} \n $url"
+                Log.d("tagg", logd)
+                instagramAPI.getData(mediaId, map, Constants.USER_AGENT).items[0]
             }
+            println("fetchDownloadLink: $postID and $items")
+
             val post: Post
             val downloadId = mutableListOf<Long>()
+
             if (items.media_type == 8) {
                 for ((index, item) in items.carousel_media.withIndex()) {
                     if (index == 0) {
@@ -86,73 +97,109 @@ class PostDownloader @Inject constructor(private val context: Context,private va
                 downloadId.add(download(post.downloadLink, post.path, post.title))
             }
             return downloadId
-        }catch (e: Exception){
+        } catch (e: Exception) {
+            e.printStackTrace()
             return mutableListOf()
         }
     }
 
 
     private fun downloadPost(item: Items): Post {
-        var videoUrl:String?=null
+        var videoUrl: String? = null
         val path: String
         val extension: String
-        val downloadLink= when (item.media_type) {
+        val downloadLink = when (item.media_type) {
             1 -> {
-                extension=".jpg"
-                path= Constants.IMAGE_FOLDER_NAME
+                extension = ".jpg"
+                path = Constants.IMAGE_FOLDER_NAME
                 item.image_versions2.candidates[0].url
 
             }
+
             2 -> {
-                extension=".mp4"
-                path= Constants.VIDEO_FOLDER_NAME
-                videoUrl=item.video_versions[0].url
+                extension = ".mp4"
+                path = Constants.VIDEO_FOLDER_NAME
+                videoUrl = item.video_versions[0].url
                 videoUrl
             }
+
             else -> {
-                extension=".jpg"
-                path= Constants.IMAGE_FOLDER_NAME
+                extension = ".jpg"
+                path = Constants.IMAGE_FOLDER_NAME
                 item.image_versions2.candidates[0].url
             }
         }
-        val title=item.user.username +"_"+System.currentTimeMillis().toString() + extension
-        val caption: String?= item.caption?.text
+        val title = item.user.username + "_" + System.currentTimeMillis().toString() + extension
+        val caption: String? = item.caption?.text
 
-        return Post(0,item.media_type,item.user.username,item.user.profile_pic_url,item.image_versions2.candidates[0].url,videoUrl,caption,path,downloadLink,extension,title,null,false)
+        return Post(
+            0,
+            item.media_type,
+            item.user.username,
+            item.user.profile_pic_url,
+            item.image_versions2.candidates[0].url,
+            videoUrl,
+            caption,
+            path,
+            downloadLink,
+            extension,
+            title,
+            null,
+            false, false
+        )
     }
 
-    private fun downloadPost2(item: ShortCodeMedia,media_type: String): Post {
-        var videoUrl:String?=null
+    private fun downloadPost2(item: ShortCodeMedia, media_type: String): Post {
+        var videoUrl: String? = null
         val path: String
         val extension: String
         val mediaType: Int
-        var imageUrl=item.display_resources.last().src
-        val downloadLink= when (media_type) {
+        var imageUrl = item.display_resources.last().src
+        val downloadLink = when (media_type) {
             Constants.IMAGE -> {
-                extension=".jpg"
-                mediaType=1
-                path= Constants.IMAGE_FOLDER_NAME
+                extension = ".jpg"
+                mediaType = 1
+                path = Constants.IMAGE_FOLDER_NAME
                 imageUrl
 
             }
+
             Constants.VIDEO -> {
-                extension=".mp4"
-                mediaType=2
-                path= Constants.VIDEO_FOLDER_NAME
-                videoUrl=item.video_url
+                extension = ".mp4"
+                mediaType = 2
+                path = Constants.VIDEO_FOLDER_NAME
+                videoUrl = item.video_url
                 videoUrl
             }
+
             else -> {
-                extension=".jpg"
-                mediaType=1
-                path= Constants.IMAGE_FOLDER_NAME
-                imageUrl=item.display_resources.last().src
+                extension = ".jpg"
+                mediaType = 1
+                path = Constants.IMAGE_FOLDER_NAME
+                imageUrl = item.display_resources.last().src
                 imageUrl
             }
         }
-        val title=item.owner.username +"_"+System.currentTimeMillis() + extension
-        val caption: String?= if(item.edge_media_to_caption.edges == null) null else item.edge_media_to_caption.edges?.get(0)?.node?.text
-        return Post(0,mediaType,item.owner.username,item.owner.profile_pic_url,imageUrl,videoUrl,caption,path,downloadLink,extension,title,null,false)
+        val title = item.owner.username + "_" + System.currentTimeMillis() + extension
+        val caption: String? =
+            if (item.edge_media_to_caption.edges == null) null else item.edge_media_to_caption.edges?.get(
+                0
+            )?.node?.text
+        return Post(
+            0,
+            mediaType,
+            item.owner.username,
+            item.owner.profile_pic_url,
+            imageUrl,
+            videoUrl,
+            caption,
+            path,
+            downloadLink,
+            extension,
+            title,
+            null,
+            false
+        )
     }
 
 
@@ -165,7 +212,9 @@ class PostDownloader @Inject constructor(private val context: Context,private va
             Environment.DIRECTORY_DOWNLOADS,
             path + title
         )
-        return (context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(request)
+        return (context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(
+            request
+        )
     }
 
 
@@ -174,15 +223,15 @@ class PostDownloader @Inject constructor(private val context: Context,private va
         val totalIndex = index + 13
         var url = link.substring(totalIndex, link.length)
         url = url.split("/?")[0]
-        url= url.split("/")[2]
+        url = url.split("/")[2]
         return url
     }
 
-    private fun getMediaId(shortcode: String): Long{
-        var mediaId=0L
-        val alphabets= Constants.SHORTCODE_CHARACTERS
-        for(letter in shortcode){
-            mediaId= (mediaId*64) + alphabets.indexOf(letter)
+    private fun getMediaId(shortcode: String): Long {
+        var mediaId = 0L
+        val alphabets = Constants.SHORTCODE_CHARACTERS
+        for (letter in shortcode) {
+            mediaId = (mediaId * 64) + alphabets.indexOf(letter)
         }
         return mediaId
     }

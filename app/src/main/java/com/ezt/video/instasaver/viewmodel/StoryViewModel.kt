@@ -1,5 +1,6 @@
 package com.ezt.video.instasaver.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -13,6 +14,8 @@ import com.ezt.video.instasaver.remote.repository.InstagramRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -46,9 +49,21 @@ class StoryViewModel @Inject constructor(private val instagramRepository: Instag
         }
     }
 
-    fun fetchReelTray(cookie: String){
+    fun fetchReelTray(cookie: String) {
         viewModelScope.launch(Dispatchers.IO) {
-            reelTray.postValue(instagramRepository.fetchReelTray(cookie))
+            try {
+                Log.d("FetchReelTray", "Start fetching reel tray...")
+                val trayList = instagramRepository.fetchReelTray(cookie)
+                Log.d("FetchReelTray", "Success! Got ${trayList.size} reels")
+                reelTray.postValue(trayList)
+            } catch (e: HttpException) {
+                val errorBody = e.response()?.errorBody()?.string()
+                Log.e("FetchReelTray", "HTTP ${e.code()} - ${e.message()} \nBody: $errorBody")
+            } catch (e: IOException) {
+                Log.e("FetchReelTray", "Network error: ${e.localizedMessage}", e)
+            } catch (e: Exception) {
+                Log.e("FetchReelTray", "Unexpected error: ${e.localizedMessage}", e)
+            }
         }
     }
 

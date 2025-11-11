@@ -4,12 +4,16 @@ import android.app.Dialog
 import android.app.DownloadManager
 import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
+import androidx.core.content.ContextCompat
 import com.ezt.video.instasaver.base.BaseActivity
 import com.ezt.video.instasaver.R
 import com.ezt.video.instasaver.databinding.ActivityViewDpBinding
@@ -21,18 +25,35 @@ import com.squareup.picasso.Picasso
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class ViewDPActivity : BaseActivity<ActivityViewDpBinding>(ActivityViewDpBinding::inflate){
+class ViewDPActivity : BaseActivity<ActivityViewDpBinding>(ActivityViewDpBinding::inflate) {
     private val dpViewerViewModel: DPViewerViewModel by viewModels()
 
-    private lateinit var username:String
+    private lateinit var username: String
     private lateinit var profilePicUrl: String
-    private var downloadId: Long=0
+    private var downloadId: Long = 0
     private lateinit var loadingDialog: Dialog
     private lateinit var onComplete: BroadcastReceiver
-    private var downloaded= false
+    private var downloaded = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        onComplete = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                val id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
+                if (id == downloadId) {
+                    downloaded = true
+                    loadingDialog.dismiss()
+                    Toast.makeText(
+                        this@ViewDPActivity,
+                        resources.getString(R.string.download_complete),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+            }
+        }
+
         username = intent.getStringExtra("username") ?: ""
         val cookies = intent.getStringExtra("cookies") ?: ""
         val userId = intent.getLongExtra("userId", 0)
@@ -52,16 +73,24 @@ class ViewDPActivity : BaseActivity<ActivityViewDpBinding>(ActivityViewDpBinding
             })
         }
 
-        binding.backButton.setOnClickListener{
+        binding.backButton.setOnClickListener {
             finish()
         }
 
-        binding.downloadButton.setOnClickListener{
-            if(downloaded){
-                Toast.makeText(this,"Already Downloaded", Toast.LENGTH_SHORT).show()
-            }else{
-                Toast.makeText(this,"Start download", Toast.LENGTH_SHORT).show()
-                loadingDialog= Dialog(this)
+        binding.downloadButton.setOnClickListener {
+            if (downloaded) {
+                Toast.makeText(
+                    this,
+                    resources.getString(R.string.already_downloaded),
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else {
+                Toast.makeText(
+                    this,
+                    resources.getString(R.string.start_download),
+                    Toast.LENGTH_SHORT
+                ).show()
+                loadingDialog = Dialog(this)
                 loadingDialog.setContentView(R.layout.download_loading_dialog)
                 loadingDialog.setCancelable(false)
                 loadingDialog.show()
@@ -71,20 +100,57 @@ class ViewDPActivity : BaseActivity<ActivityViewDpBinding>(ActivityViewDpBinding
         }
     }
 
-    fun download(){
+    fun download() {
         val uri: Uri = Uri.parse(profilePicUrl)
         val request: DownloadManager.Request = DownloadManager.Request(uri)
-        val title=username+"_"+System.currentTimeMillis()+".jpg"
+        val title = username + "_" + System.currentTimeMillis() + ".jpg"
         request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE or DownloadManager.Request.NETWORK_WIFI)
         request.setTitle(title)
         request.setDestinationInExternalPublicDir(
             Environment.DIRECTORY_DOWNLOADS,
             Constants.IMAGE_FOLDER_NAME + title
         )
-        downloadId=(getSystemService(DOWNLOAD_SERVICE) as DownloadManager).enqueue(request)
-        dpViewerViewModel.insertDP(Post(0,1,username,profilePicUrl,profilePicUrl,null,"$username's DP",null,profilePicUrl,".jpg",title,null,false))
+        downloadId = (getSystemService(DOWNLOAD_SERVICE) as DownloadManager).enqueue(request)
+        dpViewerViewModel.insertDP(
+            Post(
+                0,
+                1,
+                username,
+                profilePicUrl,
+                profilePicUrl,
+                null,
+                "$username's DP",
+                null,
+                profilePicUrl,
+                ".jpg",
+                title,
+                null,
+                false
+            )
+        )
     }
 
 
+    override fun onStart() {
+        super.onStart()
+        val intentFilter = IntentFilter()
+        intentFilter.addAction(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(onComplete, intentFilter, RECEIVER_EXPORTED)
+        } else {
+            ContextCompat.registerReceiver(
+                this@ViewDPActivity,
+                onComplete,
+                intentFilter,
+                ContextCompat.RECEIVER_EXPORTED
+            )
+
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(onComplete)
+    }
 
 }

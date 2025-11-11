@@ -16,13 +16,13 @@ import com.ezt.video.instasaver.screen.home.dpviewer.adapter.StorySearchViewAdap
 import com.ezt.video.instasaver.screen.home.story.StoryFragmentArgs
 import com.ezt.video.instasaver.screen.view.ViewDPActivity
 import com.ezt.video.instasaver.viewmodel.DPViewerViewModel
-import com.google.android.material.internal.ViewUtils.hideKeyboard
+import com.ezt.video.instasaver.R
 import dagger.hilt.android.AndroidEntryPoint
 import kotlin.getValue
 import kotlin.text.clear
 
 @AndroidEntryPoint
-class DPViewerFragment  : BaseFragment<FragmentDpViewerBinding>(FragmentDpViewerBinding::inflate){
+class DPViewerFragment : BaseFragment<FragmentDpViewerBinding>(FragmentDpViewerBinding::inflate) {
     private val dpViewerViewModel: DPViewerViewModel by viewModels()
     private lateinit var adapter: StorySearchViewAdapter
     private lateinit var cookies: String
@@ -31,40 +31,47 @@ class DPViewerFragment  : BaseFragment<FragmentDpViewerBinding>(FragmentDpViewer
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val args: StoryFragmentArgs by navArgs()
-        cookies= args.cookie
-        dpViewerViewModel.getRecentSearches()
+        cookies = args.cookie
 
         observeData()
         setOnClickListeners()
 
         binding.apply {
-            recentView.layoutManager= LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+            recentView.layoutManager =
+                LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
 
             editText.doOnTextChanged { text, _, _, count ->
-                if(count>0){
-                    dpViewerViewModel.searchUser(text.toString(),cookies)
-                    binding.progressBar.visibility=View.VISIBLE
-                    binding.searching.visibility=View.VISIBLE
-                    binding.cancelButton.visibility=View.VISIBLE
-                }else{
-                    binding.cancelButton.visibility=View.GONE
+                dpViewerViewModel.getRecentSearches()
+                if (count > 0) {
+                    dpViewerViewModel.searchUser(text.toString(), cookies)
+                    binding.progressBar.visibility = View.VISIBLE
+                    binding.searching.visibility = View.VISIBLE
+                    binding.cancelButton.visibility = View.VISIBLE
+
+                    binding.recentView.visibility = View.GONE
+                    binding.textView.visibility = View.GONE
+                } else {
+                    binding.recentView.visibility = View.VISIBLE
+                    binding.textView.visibility = View.VISIBLE
+
+                    binding.cancelButton.visibility = View.GONE
                 }
             }
         }
     }
 
     private fun setOnClickListeners() {
-        binding.fetchButton.setOnClickListener{
-            binding.progressBar.visibility=View.VISIBLE
+        binding.fetchButton.setOnClickListener {
+            binding.progressBar.visibility = View.VISIBLE
             hideKeyBoard(binding.fetchButton)
             binding.editText.text.clear()
         }
 
-        binding.backButton.setOnClickListener{
+        binding.backButton.setOnClickListener {
             NavHostFragment.findNavController(this@DPViewerFragment).navigateUp()
         }
 
-        binding.cancelButton.setOnClickListener{
+        binding.cancelButton.setOnClickListener {
             binding.editText.text.clear()
             adapter.clearData()
             hideKeyBoard(binding.cancelButton)
@@ -72,29 +79,38 @@ class DPViewerFragment  : BaseFragment<FragmentDpViewerBinding>(FragmentDpViewer
     }
 
     private fun observeData() {
-        dpViewerViewModel.searchResult.observe(viewLifecycleOwner){
-            binding.downloadView.layoutManager=LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
-            adapter = StorySearchViewAdapter(it){ user->
-                val intent= Intent(context, ViewDPActivity::class.java)
-                intent.putExtra("username",user.username)
-                intent.putExtra("cookies",cookies)
-                intent.putExtra("userId",user.pk)
+        dpViewerViewModel.searchResult.observe(viewLifecycleOwner) {
+            binding.downloadView.layoutManager =
+                LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+            adapter = StorySearchViewAdapter(it) { user ->
+                val intent = Intent(context, ViewDPActivity::class.java)
+                intent.putExtra("username", user.username)
+                intent.putExtra("cookies", cookies)
+                intent.putExtra("userId", user.pk)
                 context?.startActivity(intent)
                 dpViewerViewModel.insertRecent(user)
-                adapter.clearData()
             }
 
-            binding.downloadView.adapter=adapter
-            binding.searching.visibility=View.GONE
-            binding.progressBar.visibility=View.GONE
-            if(it.isEmpty()){
-                Toast.makeText(context,"No Account Found!", Toast.LENGTH_SHORT).show()
+            binding.downloadView.adapter = adapter
+            binding.searching.visibility = View.GONE
+            binding.progressBar.visibility = View.GONE
+            if (it.isEmpty()) {
+                Toast.makeText(
+                    context,
+                    resources.getString(R.string.no_acc_found),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
 
-        dpViewerViewModel.recents.observe(viewLifecycleOwner){
-            binding.recentView.adapter= DPRecentViewAdapter(it,cookies)
+        dpViewerViewModel.recents.observe(viewLifecycleOwner) {
+            binding.recentView.adapter = DPRecentViewAdapter(it, cookies)
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        dpViewerViewModel.getRecentSearches()
     }
 
 

@@ -8,7 +8,7 @@ import com.ezt.video.instasaver.local.Post
 import com.ezt.video.instasaver.local.PostDao
 import com.ezt.video.instasaver.local.StoryRecent
 
-@Database(entities = [Post::class,Carousel::class,StoryRecent::class, DPRecent::class], version = 1, exportSchema = false)
+@Database(entities = [Post::class,Carousel::class,StoryRecent::class, DPRecent::class], version = 2, exportSchema = false)
 abstract class InstagramDatabase : RoomDatabase() {
     abstract fun postDao(): PostDao
 }

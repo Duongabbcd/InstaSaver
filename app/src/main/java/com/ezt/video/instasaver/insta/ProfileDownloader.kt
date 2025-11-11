@@ -10,7 +10,14 @@ class ProfileDownloader @Inject constructor(private val context: Context, privat
 
     suspend fun getDP(userId: Long,cookies: String): String{
         val link= Constants.DP.format(userId)
-        return instagramAPI.getDP(link, cookies,Constants.USER_AGENT).user.hd_profile_pic_url_info.url
+        var result = ""
+        try {
+            result= instagramAPI.getDP(link, cookies,Constants.USER_AGENT).user.hd_profile_pic_url_info.url
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        return result
     }
 
 }

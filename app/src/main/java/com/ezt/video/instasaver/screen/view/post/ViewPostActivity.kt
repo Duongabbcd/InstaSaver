@@ -10,6 +10,7 @@ import android.content.ClipboardManager
 import android.content.ContentUris
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -26,12 +27,14 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.viewpager2.widget.ViewPager2
 import com.ezt.video.instasaver.R
 import com.ezt.video.instasaver.base.BaseActivity
 import com.ezt.video.instasaver.databinding.ActivityViewPostBinding
 import com.ezt.video.instasaver.local.Carousel
 import com.ezt.video.instasaver.model.CarouselMedia
+import com.ezt.video.instasaver.screen.home.fragment.HomeFragment
 import com.ezt.video.instasaver.screen.view.post.adapter.CarouselViewPagerAdapter
 import com.ezt.video.instasaver.utils.Constants
 import com.ezt.video.instasaver.utils.InvalidLinkException
@@ -40,29 +43,35 @@ import com.ezt.video.instasaver.viewmodel.HomeViewModel
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.squareup.picasso.Picasso
+import dagger.hilt.android.AndroidEntryPoint
 import java.util.regex.Pattern
 
+@AndroidEntryPoint
 class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostBinding::inflate) {
-    private var viewMore= true
-    private lateinit var uri:Uri
-    private val homeViewModel:HomeViewModel by viewModels()
-    private var captionDialog: Dialog?= null
+    private var viewMore = true
+    private lateinit var uri: Uri
+    private val homeViewModel: HomeViewModel by viewModels()
+    private var captionDialog: Dialog? = null
     private lateinit var mediaList: List<CarouselMedia>
-    private lateinit var intentSenderLauncher : ActivityResultLauncher<IntentSenderRequest>
-    private var deletedImageUri: Uri?=null
-    private var notDeleted=true
+    private lateinit var intentSenderLauncher: ActivityResultLauncher<IntentSenderRequest>
+    private var deletedImageUri: Uri? = null
+    private var notDeleted = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val post: Bundle?= intent.extras
-        val name:String= post?.getString("name") ?: "lol"
-        val mediaType= post?.getInt("media_type",1)
-        val caption= post?.getString("caption") ?: ""
-        val username= post?.getString("username")
-        val profilePicture= post?.getString("profilePicture")
-        val instagramURL=post?.getString("instagram_url") ?: Constants.INSTAGRAM_HOMEPAGE_LINK
-        var isImage=true
-        var isCarousel=false
+        HomeFragment.load = false
+        val post: Bundle? = intent.extras
+        val name: String = post?.getString("name") ?: "lol"
+        val mediaType = post?.getInt("media_type", 1)
+        val caption = post?.getString("caption") ?: ""
+        val username = post?.getString("username")
+        val profilePicture = post?.getString("profilePicture")
+        val instagramURL = post?.getString("instagram_url") ?: Constants.INSTAGRAM_HOMEPAGE_LINK
+        val isPost = post?.getBoolean("isStory") ?: false
+        var isImage = true
+        var isCarousel = false
+
+        binding.shareToIG.isVisible = !isPost
         when (mediaType) {
             1 -> {
                 binding.videoView.visibility = View.GONE
@@ -70,55 +79,58 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
                 val photos = loadPhoto(name, post.getString("imageUrl"))
                 if (photos != null) {
                     binding.imageView.setImageURI(photos)
-                    uri=photos
+                    uri = photos
                 }
             }
+
             2 -> {
                 binding.videoView.visibility = View.VISIBLE
                 binding.imageView.visibility = View.GONE
                 setVideo(loadVideo(name, post.getString("videoUrl")))
-                isImage=false
+                isImage = false
             }
+
             else -> {
                 loadCarousel(instagramURL)
-                binding.imageView.visibility=View.GONE
-                binding.videoView.visibility=View.GONE
-                isCarousel=true
+                binding.imageView.visibility = View.GONE
+                binding.videoView.visibility = View.GONE
+                isCarousel = true
 
             }
         }
 
-        binding.captionView.text=caption
+        binding.captionView.text = caption
         Picasso.get().load(profilePicture).into(binding.profilePicView)
-        binding.usernameView.text= username
-        setOnClickListeners(isImage,instagramURL,caption,username ?: "",isCarousel)
+        binding.usernameView.text = username
+        setOnClickListeners(isImage, instagramURL, caption, username ?: "", isCarousel)
         initIntentSenderLauncher()
     }
 
-    private fun loadCarousel(link:String){
-        val viewStub= binding.viewStub.inflate()
-        val viewPager:ViewPager2= viewStub.findViewById(R.id.viewpager)
-        homeViewModel.getCarousel(link).observe(this){
-            if(it!=null && notDeleted){
-                mediaList=fetchCarousel(it)
-                viewPager.adapter= CarouselViewPagerAdapter(this@ViewPostActivity,mediaList)
+    private fun loadCarousel(link: String) {
+        val viewStub = binding.viewStub.inflate()
+        val viewPager: ViewPager2 = viewStub.findViewById(R.id.viewpager)
+        homeViewModel.getCarousel(link).observe(this) {
+            if (it != null && notDeleted) {
+                mediaList = fetchCarousel(it)
+                viewPager.adapter = CarouselViewPagerAdapter(this@ViewPostActivity, mediaList)
                 val tabLayout: TabLayout = viewStub.findViewById(R.id.tabLayout)
                 TabLayoutMediator(tabLayout, viewPager) { _: TabLayout.Tab, _: Int -> }.attach()
-                uri= mediaList[0].uri!!
+                uri = mediaList[0].uri!!
             }
         }
     }
 
     private fun initIntentSenderLauncher() {
-        intentSenderLauncher = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
-            if (it.resultCode == RESULT_OK) {
-                if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
-                    deleteFile(deletedImageUri ?: return@registerForActivityResult)
+        intentSenderLauncher =
+            registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) {
+                if (it.resultCode == RESULT_OK) {
+                    if (Build.VERSION.SDK_INT == Build.VERSION_CODES.Q) {
+                        deleteFile(deletedImageUri ?: return@registerForActivityResult)
+                    }
+                } else {
+                    throw InvalidLinkException("Unable to delete post")
                 }
-            } else {
-                throw InvalidLinkException("Unable to delete post")
             }
-        }
     }
 
 
@@ -127,10 +139,10 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
         for (carousel in carousels) {
             val title = carousel.title ?: "lol"
             if (carousel.media_type == 1) {
-                val uri = loadPhoto(title,carousel.image_url)
+                val uri = loadPhoto(title, carousel.image_url)
                 medias.add(CarouselMedia(uri, 1))
             } else {
-                val uri = loadVideo(title,carousel.video_url)
+                val uri = loadVideo(title, carousel.video_url)
                 medias.add(CarouselMedia(uri, 2))
             }
         }
@@ -138,7 +150,13 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
     }
 
 
-    private fun setOnClickListeners(isImage:Boolean,instagramUrl: String,caption:String,username:String,isCarousel:Boolean){
+    private fun setOnClickListeners(
+        isImage: Boolean,
+        instagramUrl: String,
+        caption: String,
+        username: String,
+        isCarousel: Boolean
+    ) {
         val viewMore2 = "View More"
         val viewLess = "View Less"
         binding.viewMore.setOnClickListener {
@@ -151,45 +169,56 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
             }
             viewMore = !viewMore
         }
-        binding.backButton.setOnClickListener{
+        binding.backButton.setOnClickListener {
             finish()
         }
 
-        binding.repost.setOnClickListener{
-            repost(caption, username,isImage)
+        binding.repost.setOnClickListener {
+            repost(caption, username, isImage)
         }
 
-        binding.caption.setOnClickListener{
-            launchCaptionDialog(caption,username)
+        binding.caption.setOnClickListener {
+            launchCaptionDialog(caption, username)
         }
 
-        binding.menu.setOnClickListener{
+        binding.shareToIG.setOnClickListener {
+            val uri = Uri.parse(instagramUrl)
+            val intent = Intent(Intent.ACTION_VIEW, uri)
+            intent.setPackage(Constants.INSTAGRAM)
+            startActivity(intent)
+        }
+
+        binding.delete.setOnClickListener {
+            deletePost(instagramUrl, isCarousel)
+        }
+
+        binding.menu.setOnClickListener {
             val popup = PopupMenu(this, it)
             val inflater: MenuInflater = popup.menuInflater
             inflater.inflate(R.menu.view_post_menu, popup.menu)
             popup.setOnMenuItemClickListener { menuItem ->
-                when(menuItem.itemId){
-                    R.id.openInInstagram-> {
-                        val uri= Uri.parse(instagramUrl)
-                        val intent= Intent(Intent.ACTION_VIEW,uri)
+                when (menuItem.itemId) {
+                    R.id.openInInstagram -> {
+                        val uri = Uri.parse(instagramUrl)
+                        val intent = Intent(Intent.ACTION_VIEW, uri)
                         intent.setPackage(Constants.INSTAGRAM)
                         startActivity(intent)
                     }
-                    R.id.delete ->{
-                        deletePost(instagramUrl,isCarousel)
+
+                    R.id.delete -> {
+                        deletePost(instagramUrl, isCarousel)
                     }
                 }
                 true
             }
             popup.show()
-
         }
 
-        binding.share.setOnClickListener{
+        binding.share.setOnClickListener {
             val intent = Intent(Intent.ACTION_SEND)
-            val intentType=if(isImage){
+            val intentType = if (isImage) {
                 "image/jpeg"
-            }else{
+            } else {
                 "video/mp4"
             }
             intent.type = intentType
@@ -200,7 +229,7 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
     }
 
 
-    private fun loadPhoto(name:String,imageUrl: String?) : Uri?{
+    private fun loadPhoto(name: String, imageUrl: String?): Uri? {
         try {
             val collection = sdk29AndUp {
                 MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
@@ -223,9 +252,9 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
                 contentUri
             }
             return uri
-        }catch(e:android.database.CursorIndexOutOfBoundsException){
+        } catch (e: android.database.CursorIndexOutOfBoundsException) {
             e.printStackTrace()
-            if(imageUrl!=null) {
+            if (imageUrl != null) {
                 val alertDialog = AlertDialog.Builder(this@ViewPostActivity)
                     .setTitle("Image Not Found!")
                     .setMessage("The Image is Either deleted, renamed or moved to other media.")
@@ -242,7 +271,7 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
         }
     }
 
-    private fun loadVideo(name:String, videoUrl:String?): Uri?{
+    private fun loadVideo(name: String, videoUrl: String?): Uri? {
         try {
             val collection = sdk29AndUp {
                 MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
@@ -265,8 +294,8 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
                 contentUri
             }
             return uri
-        }catch(e:android.database.CursorIndexOutOfBoundsException){
-            if(videoUrl!=null) {
+        } catch (e: android.database.CursorIndexOutOfBoundsException) {
+            if (videoUrl != null) {
                 val alertDialog = AlertDialog.Builder(this@ViewPostActivity)
                     .setTitle("Video Not Found!")
                     .setMessage("The Video is Either deleted, renamed or moved to other media.")
@@ -284,63 +313,69 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
 
     }
 
-    private fun repost(caption:String,username:String,isImage:Boolean) {
-        val repostCaption= Constants.REPOST+"@"+username+" \n"+caption
-        val clipboardManager=getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        val clipData= ClipData.newPlainText("text",repostCaption)
+    private fun repost(caption: String, username: String, isImage: Boolean) {
+        val repostCaption = Constants.REPOST + "@" + username + " \n" + caption
+        val clipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+        val clipData = ClipData.newPlainText("text", repostCaption)
         clipboardManager.setPrimaryClip(clipData)
         val share = Intent(Intent.ACTION_SEND)
-        share.type = if(isImage) "image/*" else "video/*"
+        share.type = if (isImage) "image/*" else "video/*"
         share.setPackage(Constants.INSTAGRAM)
         share.putExtra(Intent.EXTRA_STREAM, uri)
         startActivity(Intent.createChooser(share, "Share to"))
-        Toast.makeText(this@ViewPostActivity,"Caption copied to clipboard",Toast.LENGTH_SHORT).show()
+        Toast.makeText(this@ViewPostActivity, "Caption copied to clipboard", Toast.LENGTH_SHORT)
+            .show()
     }
 
     private fun launchCaptionDialog(caption: String, username: String) {
         if (captionDialog == null) {
-            val clipboardManager=getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
             captionDialog = Dialog(this@ViewPostActivity)
             captionDialog!!.setContentView(R.layout.caption_dialog_layout)
-            captionDialog!!.window?.setBackgroundDrawable(ContextCompat.getDrawable(this@ViewPostActivity,R.drawable.rounded_corner_white_rectangle))
+            captionDialog!!.window?.setBackgroundDrawable(
+                ContextCompat.getDrawable(
+                    this@ViewPostActivity,
+                    R.drawable.rounded_corner_white_rectangle
+                )
+            )
             captionDialog!!.findViewById<TextView>(R.id.captionView).text = caption
 
-            captionDialog!!.findViewById<TextView>(R.id.copyAll).setOnClickListener{
-                val clipData= ClipData.newPlainText("text",caption)
+            captionDialog!!.findViewById<TextView>(R.id.copyAll).setOnClickListener {
+                val clipData = ClipData.newPlainText("text", caption)
                 clipboardManager.setPrimaryClip(clipData)
-                Toast.makeText(this@ViewPostActivity,"Caption copied!",Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@ViewPostActivity, "Caption copied!", Toast.LENGTH_SHORT).show()
             }
 
-            captionDialog!!.findViewById<TextView>(R.id.copyHashtags).setOnClickListener{
-                val loadingViewStub=captionDialog!!.findViewById<ViewStub>(R.id.loadingViewStub)
+            captionDialog!!.findViewById<TextView>(R.id.copyHashtags).setOnClickListener {
+                val loadingViewStub = captionDialog!!.findViewById<ViewStub>(R.id.loadingViewStub)
                 loadingViewStub.inflate()
-                val stringBuilder= StringBuilder()
-                val pattern= Pattern.compile("#(\\w+)")
-                val match=pattern.matcher(caption)
-                while(match.find()){
-                    stringBuilder.append("#"+match.group(1)+" ")
+                val stringBuilder = StringBuilder()
+                val pattern = Pattern.compile("#(\\w+)")
+                val match = pattern.matcher(caption)
+                while (match.find()) {
+                    stringBuilder.append("#" + match.group(1) + " ")
                 }
-                val clipData= ClipData.newPlainText("text",stringBuilder)
+                val clipData = ClipData.newPlainText("text", stringBuilder)
                 clipboardManager.setPrimaryClip(clipData)
-                loadingViewStub.visibility=View.GONE
-                Toast.makeText(this@ViewPostActivity,"Hashtags copied!",Toast.LENGTH_SHORT).show()
+                loadingViewStub.visibility = View.GONE
+                Toast.makeText(this@ViewPostActivity, "Hashtags copied!", Toast.LENGTH_SHORT).show()
             }
 
-            captionDialog!!.findViewById<TextView>(R.id.copyUsername).setOnClickListener{
-                val clipData= ClipData.newPlainText("text",username)
+            captionDialog!!.findViewById<TextView>(R.id.copyUsername).setOnClickListener {
+                val clipData = ClipData.newPlainText("text", username)
                 clipboardManager.setPrimaryClip(clipData)
-                Toast.makeText(this@ViewPostActivity,"Username copied!",Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@ViewPostActivity, "Username copied!", Toast.LENGTH_SHORT).show()
             }
         }
         captionDialog!!.show()
     }
 
-    private fun setVideo(videoUri:Uri?){
+    private fun setVideo(videoUri: Uri?) {
         if (videoUri != null) {
-            binding.videoView.setMediaController(MediaController(thiscom.omnicoder.instaace.ui.activities.ViewPostActivity))
+            binding.videoView.setMediaController(MediaController(this@ViewPostActivity))
             binding.videoView.setVideoURI(videoUri)
             binding.videoView.start()
-            uri=videoUri
+            uri = videoUri
             binding.videoView.setOnCompletionListener {
                 it.seekTo(0)
                 it.start()
@@ -348,7 +383,7 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
         }
     }
 
-    private fun deleteFile(uri:Uri) {
+    private fun deleteFile(uri: Uri) {
         try {
             contentResolver.delete(uri, null, null)
         } catch (e: SecurityException) {
@@ -357,68 +392,70 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
                     Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> {
                         MediaStore.createDeleteRequest(contentResolver, listOf(uri)).intentSender
                     }
+
                     Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
                         val recoverableSecurityException = e as? RecoverableSecurityException
                         recoverableSecurityException?.userAction?.actionIntent?.intentSender
                     }
+
                     else -> null
                 }
                 intentSender?.let {
                     intentSenderLauncher.launch(IntentSenderRequest.Builder(it).build())
                 }
-            }catch (e: InvalidLinkException){
-                Toast.makeText(thiscom.omnicoder.instaace.ui.activities.ViewPostActivity,e.message,Toast.LENGTH_SHORT).show()
+            } catch (e: InvalidLinkException) {
+                Toast.makeText(this@ViewPostActivity, e.message, Toast.LENGTH_SHORT).show()
             }
         }
 
     }
 
 
-    private fun deletePost(instagramUrl:String,isCarousel:Boolean){
-        notDeleted=false
-        val clipboardManager=getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
-        val primaryClip= clipboardManager.primaryClip?.getItemAt(0)?.text.toString()
-        if(primaryClip==instagramUrl){
-            clipboardManager.setPrimaryClip(ClipData.newPlainText("text",""))
+    private fun deletePost(instagramUrl: String, isCarousel: Boolean) {
+        notDeleted = false
+        val clipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+        val primaryClip = clipboardManager.primaryClip?.getItemAt(0)?.text.toString()
+        if (primaryClip == instagramUrl) {
+            clipboardManager.setPrimaryClip(ClipData.newPlainText("text", ""))
         }
         homeViewModel.deletePost(instagramUrl)
-        if(isCarousel){
-            for(media in mediaList){
+        if (isCarousel) {
+            for (media in mediaList) {
                 homeViewModel.deleteCarousel(instagramUrl)
-                val uri= media.uri
-                if(uri!=null){
-                    deletedImageUri=uri
+                val uri = media.uri
+                if (uri != null) {
+                    deletedImageUri = uri
                     deleteFile(uri)
                 }
             }
-        }else{
-            deletedImageUri=uri
+        } else {
+            deletedImageUri = uri
             deleteFile(uri)
         }
-        Toast.makeText(this@ViewPostActivity,"Post Delete successfully",Toast.LENGTH_SHORT).show()
+        Toast.makeText(this@ViewPostActivity, "Post Delete successfully", Toast.LENGTH_SHORT).show()
         finish()
     }
 
-    private fun download(link: String,isImage:Boolean,title:String){
-        val loadingDialog=Dialog(this)
+    private fun download(link: String, isImage: Boolean, title: String) {
+        val loadingDialog = Dialog(this)
         loadingDialog.setContentView(R.layout.download_loading_dialog)
         loadingDialog.show()
-        val path= if(isImage) Constants.IMAGE_FOLDER_NAME else Constants.VIDEO_FOLDER_NAME
-        var downloadId=0L
-        homeViewModel.downloadPost2(link,path,title)
+        val path = if (isImage) Constants.IMAGE_FOLDER_NAME else Constants.VIDEO_FOLDER_NAME
+        var downloadId = 0L
+        homeViewModel.downloadPost2(link, path, title)
         homeViewModel.downloadId.observe(this) {
             downloadId = it
         }
 
-        lateinit var onComplete:BroadcastReceiver
-        onComplete= object : BroadcastReceiver() {
+        lateinit var onComplete: BroadcastReceiver
+        onComplete = object : BroadcastReceiver() {
             override fun onReceive(context: Context, intent: Intent) {
                 val id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
-                if(id==downloadId){
-                    if(isImage){
-                        binding.imageView.setImageURI(loadPhoto(title,null))
-                    }else{
-                        setVideo(loadVideo(title,null))
+                if (id == downloadId) {
+                    if (isImage) {
+                        binding.imageView.setImageURI(loadPhoto(title, null))
+                    } else {
+                        setVideo(loadVideo(title, null))
                     }
                     loadingDialog.dismiss()
                     unregisterReceiver(onComplete)
@@ -428,6 +465,20 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
         }
 
 //        registerReceiver(onComplete, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
+        val intentFilter = IntentFilter()
+        intentFilter.addAction(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(
+                onComplete, intentFilter, RECEIVER_EXPORTED
+            )
+        } else {
+            ContextCompat.registerReceiver(
+                this,
+                onComplete,
+                intentFilter,
+                ContextCompat.RECEIVER_EXPORTED
+            )
+        }
     }
 
 }

@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.ezt.video.instasaver.base.BaseActivity
 import com.ezt.video.instasaver.databinding.ActivityDownloadStoryBinding
 import com.ezt.video.instasaver.model.Story
+import com.ezt.video.instasaver.R
 import com.ezt.video.instasaver.screen.download.adapter.StoryHighlightViewAdapter
 import com.ezt.video.instasaver.screen.download.adapter.StoryViewAdapter
 import com.ezt.video.instasaver.viewmodel.StoryViewModel
@@ -55,7 +56,7 @@ class DownloadStoryActivity :
                     adapter.reset()
                     adapter.notifyDataSetChanged()
                     binding.downloadButton.visibility= View.GONE
-                    Toast.makeText(context,"Download complete", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context,resources.getString(R.string.download_complete), Toast.LENGTH_SHORT).show()
                 }
 
             }

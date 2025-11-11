@@ -89,6 +89,12 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         binding.activityMainBottomNavigationView.selectedItemId= R.id.downloads
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        val clipboard = this.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+        val emptyClip = ClipData.newPlainText("", "")
+        clipboard.setPrimaryClip(emptyClip)
+    }
 
     companion object {
         var isChangeTheme = false

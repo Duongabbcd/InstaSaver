@@ -7,40 +7,41 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ezt.video.instasaver.base.BaseFragment
 import com.ezt.video.instasaver.databinding.FragmentHomeBinding
+import com.ezt.video.instasaver.R
 import com.ezt.video.instasaver.screen.home.adapter.DownloadViewAdapter
 import com.ezt.video.instasaver.screen.login.InstagramLoginActivity
 import com.ezt.video.instasaver.screen.login.RequestLoginActivity
 import com.ezt.video.instasaver.viewmodel.HomeViewModel
 import kotlin.toString
-import androidx.activity.viewModels
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
+import com.ezt.video.instasaver.viewmodel.StoryViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::inflate) {
     private val viewModel: HomeViewModel by viewModels()
+    private val storyViewModel: StoryViewModel by viewModels()
 
     private var cookies: String? = null
     private var downloadID = mutableListOf<Long>()
     private var size: Int = 0
-    private var load: Boolean = false
     private lateinit var navigation: DownloadNavigation
-    private lateinit var downloadViewAdapter: DownloadViewAdapter
 
     private val onCompleteReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
             if (id != -1L && downloadID.contains(id)) {
                 downloadID.remove(id)
-
+                println("onCompleteReceiver: $downloadID")
                 if (downloadID.isEmpty()) {
                     binding.progressBar.visibility = View.GONE
                     val holder = binding.downloadView.findViewHolderForAdapterPosition(0)
@@ -99,7 +100,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
                 hideKeyBoard(binding.downloadButton)
             } else {
                 binding.editText.text.clear()
-                Toast.makeText(ctx, "Invalid Link!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(ctx, resources.getString(R.string.invalid_link), Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -120,10 +121,9 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         if (clipboard.primaryClipDescription?.hasMimeType(MIMETYPE_TEXT_PLAIN) == true && clipboard.hasPrimaryClip()) {
             val item = clipboard.primaryClip?.getItemAt(0)
             val link = item?.text.toString()
-
+            println("checkClipboard: $link")
             if (isInstagramLink(link)) {
                 binding.editText.setText(link)
-                download(link)
             }
         }
     }
@@ -133,9 +133,29 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         if (cookies == null) {
             startActivity(Intent(context, RequestLoginActivity::class.java))
         } else {
-            viewModel.downloadPost(link, cookies!!)
+            if(link.contains("stories")) {
+                val searchUser = getStoryUsername(link) ?: ""
+                cookies?.let { cookie ->
+                    storyViewModel.searchUser(searchUser, cookie)
+                    storyViewModel.searchResult.observe(viewLifecycleOwner)  {
+                        val result = it.first()
+                        storyViewModel.fetchStory(result.user.pk, cookie)
+                    }
+                    storyViewModel.stories.observe(viewLifecycleOwner) {
+                        it.onEach { url ->
+                            storyViewModel.downloadStory(url)
+                        }
+                    }
+                }
+
+            } else {
+                viewModel.downloadPost(link, cookies!!)
+            }
+
         }
+
         binding.editText.text.clear()
+        binding.progressBar.visibility = View.GONE
         load = true
     }
 
@@ -148,7 +168,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
             val url = link.substring(totalIndex, link.length)
             isInstagramLink = url.length >= 14
         }
-        val isPostLink = link.contains("/p/") || link.contains("/tv/") || link.contains("/reel/")
+        val isPostLink = link.contains("/p/") || link.contains("/tv/") || link.contains("/reel/") || link.contains("/stories/")
         return isInstagramLink && isPostLink
     }
 
@@ -161,17 +181,28 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
     override fun onStop() {
         super.onStop()
         // Always unregister
-//        requireContext().unregisterReceiver(onCompleteReceiver)
+        requireContext().unregisterReceiver(onCompleteReceiver)
     }
 
 
     override fun onStart() {
         super.onStart()
         // Register with requireContext() to ensure it's non-null
-//        requireContext().registerReceiver(
-//            onCompleteReceiver,
-//            IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
-//        )
+        val intentFilter = IntentFilter()
+        intentFilter.addAction(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
+        val ctx = context ?: return
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ctx.registerReceiver(
+                onCompleteReceiver, intentFilter, Context.RECEIVER_EXPORTED
+            )
+        } else {
+            ContextCompat.registerReceiver(
+                ctx,
+                onCompleteReceiver,
+                intentFilter,
+                ContextCompat.RECEIVER_EXPORTED
+            )
+        }
     }
 
     override fun onResume() {
@@ -182,7 +213,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
 
     private fun observeData(context: Context?) {
         viewModel.allPosts.observe(viewLifecycleOwner) {
-            binding.downloadView.adapter = DownloadViewAdapter(load, it)
+            load = false
+            binding.downloadView.adapter = DownloadViewAdapter(load, it.take(5))
             size = it.size
         }
 
@@ -206,6 +238,15 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
 
         }
 
+    }
+
+    companion object {
+        var load: Boolean = false
+
+        fun getStoryUsername(url: String): String? {
+            val regex = Regex("https?://(www\\.)?instagram\\.com/stories/([^/]+)/")
+            return regex.find(url)?.groupValues?.get(2)
+        }
     }
 
     interface DownloadNavigation {

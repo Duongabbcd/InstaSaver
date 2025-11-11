@@ -20,6 +20,7 @@ data class Post(
     val title:String?,
     var link:String?,
     var isCarousel: Boolean,
+    var isStory: Boolean = false
 )
 
 @Entity(tableName = "carousel_table")

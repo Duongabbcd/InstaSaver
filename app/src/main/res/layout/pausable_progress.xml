@@ -7,13 +7,13 @@
     <View
         android:id="@+id/back_progress"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/progress_bar_height"
+        android:layout_height="@dimen/_2sdp"
         android:background="@color/progress_secondary" />
 
     <View
         android:id="@+id/front_progress"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/progress_bar_height"
+        android:layout_height="@dimen/_2sdp"
         android:background="@color/progress_primary"
         android:visibility="invisible"
         tools:visibility="visible"/>
@@ -21,7 +21,7 @@
     <View
         android:id="@+id/max_progress"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/progress_bar_height"
+        android:layout_height="@dimen/_2sdp"
         android:background="#fff"
         android:visibility="gone" />
 </FrameLayout>

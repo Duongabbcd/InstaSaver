@@ -20,7 +20,7 @@ class RequestLoginActivity : BaseActivity<ActivityRequestLoginBinding>(ActivityR
             skip.setOnClickListener{
                 startActivity(Intent(this@RequestLoginActivity,MainActivity::class.java))
                 finish()
-                val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
                 val clipData: ClipData = ClipData.newPlainText("link","")
                 clipboard.setPrimaryClip(clipData)
             }

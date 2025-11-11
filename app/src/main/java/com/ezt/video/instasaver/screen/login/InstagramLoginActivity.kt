@@ -32,13 +32,18 @@ class InstagramLoginActivity : BaseActivity<ActivityInstagramLoginBinding>(Activ
                 if(url==Constants.INSTAGRAM_SAVE_LOGIN_LINK || url== Constants.INSTAGRAM_HOMEPAGE_LINK){
                     saveCookies()
                     Toast.makeText(this@InstagramLoginActivity, "Logged in successfully!", Toast.LENGTH_SHORT).show()
-                    startActivity(Intent(this@InstagramLoginActivity, MainActivity::class.java))
+                    startActivity(Intent(this@InstagramLoginActivity, MainActivity::class.java).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                    })
                 }
             }
         }
         myWebView.loadUrl("https://www.instagram.com/accounts/login/")
         binding.button.setOnClickListener {
             saveCookies()
+            startActivity(Intent(this@InstagramLoginActivity, MainActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            })
         }
 
     }
