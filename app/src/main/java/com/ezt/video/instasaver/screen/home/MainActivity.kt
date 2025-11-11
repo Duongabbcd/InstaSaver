@@ -8,6 +8,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.view.Menu
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -19,7 +20,10 @@ import com.ezt.video.instasaver.databinding.ActivityMainBinding
 import com.ezt.video.instasaver.R
 import com.ezt.video.instasaver.screen.home.fragment.HomeFragment
 import androidx.navigation.fragment.NavHostFragment
+import com.ezt.video.instasaver.utils.Constants
 import dagger.hilt.android.AndroidEntryPoint
+import java.io.File
+import java.io.IOException
 
 @AndroidEntryPoint
 class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::inflate),HomeFragment.DownloadNavigation{
@@ -33,6 +37,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.fragmentContainerView) as NavHostFragment
         val navController = navHostFragment.navController
+        addingNoMediaFiles(getInstaSaverFilePath())
         binding.apply {
             setupWithNavController(binding.activityMainBottomNavigationView, navController)
         }
@@ -43,6 +48,10 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
             readPermission= permissions[Manifest.permission.WRITE_EXTERNAL_STORAGE] ?: writePermission
         }
         updateOrRequestPermissions()
+    }
+
+    private fun getInstaSaverFilePath(): String {
+        return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)?.absolutePath + File.separator + "InstaSaver"
     }
 
 
@@ -94,6 +103,32 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         val clipboard = this.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
         val emptyClip = ClipData.newPlainText("", "")
         clipboard.setPrimaryClip(emptyClip)
+    }
+
+    private fun addingNoMediaFiles(videoDownloaderPath: String) {
+
+        val folder = File(videoDownloaderPath)
+
+        if (!folder.exists()) {
+            folder.mkdirs()  // Create folder if it doesn't exist
+        }
+
+        val nomediaFile = File(folder, ".nomedia")
+
+        if (!nomediaFile.exists()) {
+            try {
+                val created = nomediaFile.createNewFile()
+                if (created) {
+                    println(".nomedia file created")
+                } else {
+                    println("Failed to create .nomedia file")
+                }
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        } else {
+            println(".nomedia already exists")
+        }
     }
 
     companion object {

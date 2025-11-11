@@ -55,6 +55,7 @@ class InstagramRepository @Inject constructor(private val postDao: PostDao,priva
     }
 
     fun deleteCarousel(url:String){
+        println("deleteCarousel: $url")
         postDao.deletePost(url)
         postDao.deleteCarousel(url)
     }
