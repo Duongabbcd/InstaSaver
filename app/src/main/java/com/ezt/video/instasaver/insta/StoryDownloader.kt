@@ -13,6 +13,7 @@ import com.ezt.video.instasaver.model.Story
 import com.ezt.video.instasaver.model.StoryHighlight
 import com.ezt.video.instasaver.remote.network.InstagramAPI
 import com.ezt.video.instasaver.utils.Constants
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
 import javax.inject.Inject
@@ -65,6 +66,14 @@ class StoryDownloader @Inject constructor(
         val title = "${username}_${currentTime}$extension"
         story.name = title
         val caption = "${username}'s story from ${formatter.format(currentTime)}"
+
+
+        val avatarFile = File(Constants.AVATAR_FOLDER_NAME, story.username + ".jpg")
+        if (avatarFile.exists()) {
+            avatarFile.delete() // delete old file
+        }
+        download(story.profilePicUrl, Constants.AVATAR_FOLDER_NAME, story.username + ".jpg")
+
         postDao.insertPost(
             Post(
                 0,
@@ -129,16 +138,18 @@ class StoryDownloader @Inject constructor(
 
     fun download(downloadLink: String?, path: String?, title: String?): Long {
         val uri: Uri = Uri.parse(downloadLink)
-        val request: DownloadManager.Request = DownloadManager.Request(uri)
-        request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE or DownloadManager.Request.NETWORK_WIFI)
+        val request = DownloadManager.Request(uri)
+
+        request.setAllowedNetworkTypes(
+            DownloadManager.Request.NETWORK_MOBILE or DownloadManager.Request.NETWORK_WIFI
+        )
         request.setTitle(title)
-        request.setDestinationInExternalPublicDir(
-            Environment.DIRECTORY_DOWNLOADS,
-            path + title
-        )
-        return (context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(
-            request
-        )
+
+        // Use absolute path with Uri.fromFile
+        val file = File(path, title)
+        request.setDestinationUri(Uri.fromFile(file))
+
+        return (context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(request)
     }
 
     suspend fun getReelMedia(reelId: Long, cookie: String): ReelTray? {

@@ -2,6 +2,7 @@ package com.ezt.video.instasaver.screen.home.adapter
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -10,15 +11,21 @@ import android.view.ViewStub
 import android.widget.ImageView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.ezt.video.instasaver.R
 import com.ezt.video.instasaver.databinding.ItemDownloadViewBinding
 import com.ezt.video.instasaver.local.Post
 import com.ezt.video.instasaver.screen.view.post.ViewPostActivity
+import com.ezt.video.instasaver.utils.Constants
 import com.squareup.picasso.Picasso
+import java.io.File
 
 class DownloadViewAdapter(private val load: Boolean, private val allPosts: List<Post>) :
     RecyclerView.Adapter<DownloadViewAdapter.DownloadViewHolder>() {
     private lateinit var context: Context
+//    private var load: Boolean = false
+//    private val allPosts = mutableListOf<Post>()
+
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int
@@ -37,6 +44,12 @@ class DownloadViewAdapter(private val load: Boolean, private val allPosts: List<
 
     override fun getItemCount(): Int = allPosts.size
 
+//    fun submitList(input: List<Post>, isLoaded : Boolean = false) {
+//        load = isLoaded
+//        allPosts.clear()
+//        allPosts.addAll(input)
+//        notifyDataSetChanged()
+//    }
 
     inner class DownloadViewHolder(private val binding: ItemDownloadViewBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -48,16 +61,24 @@ class DownloadViewAdapter(private val load: Boolean, private val allPosts: List<
         fun bind(position: Int) {
             val post = allPosts[position]
             binding.apply {
-                println("DownloadViewHolder 123 $post")
-                val picasso = Picasso.get()
                 val mediaType = post.media_type
+                val postPath = post.path ?: Constants.STORY_FOLDER_NAME
+                if (post.title.isNullOrEmpty()) {
+                    return@apply
+                }
+                val input = File(postPath, post.title)
+                val uri = Uri.fromFile(input)
+                Glide.with(context).load(uri).into(imageView)
+
                 when (mediaType) {
                     8 -> mediaTypeIconView.setImageResource(R.drawable.ic_copy)
                     2 -> mediaTypeIconView.setImageResource(R.drawable.ic_play)
                     else -> mediaTypeIconView.visibility = View.GONE
                 }
-                picasso.load(post.image_url).into(imageView)
-                picasso.load(post.profile_pic_url).into(profilePicView)
+
+                val avatarFile = File(Constants.AVATAR_FOLDER_NAME, post.username.plus(".jpg"))
+                println("DownloadViewHolder file path 1 ${post.username} $avatarFile")
+                Glide.with(context).load(Uri.fromFile(avatarFile)).into(profilePicView)
                 root.setOnClickListener {
                     val viewIntent = Intent(context, ViewPostActivity::class.java)
                     val postDetail = Bundle()
@@ -75,11 +96,11 @@ class DownloadViewAdapter(private val load: Boolean, private val allPosts: List<
                 }
                 usernameView.text = post.username
                 captionView.text = post.caption
-                if (load && position == 0) {
-                    loadingViewStub.inflate()
-                    root.isClickable = false
-                    profilePicView.elevation = 0F
-                }
+//                if (load && position == 0) {
+//                    loadingViewStub.inflate()
+//                    root.isClickable = false
+//                    profilePicView.elevation = 0F
+//                }
             }
         }
 

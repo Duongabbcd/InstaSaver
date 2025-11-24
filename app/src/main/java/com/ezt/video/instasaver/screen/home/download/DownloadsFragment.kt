@@ -14,16 +14,17 @@ import com.ezt.video.instasaver.viewmodel.HomeViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class DownloadsFragment : BaseFragment<FragmentDownloadsBinding>(FragmentDownloadsBinding::inflate){
-    private val downloadViewModel : DownloadsViewModel by viewModels()
-    private val homeViewModel : HomeViewModel by viewModels()
+class DownloadsFragment :
+    BaseFragment<FragmentDownloadsBinding>(FragmentDownloadsBinding::inflate) {
+    private val downloadViewModel: DownloadsViewModel by viewModels()
+    private val homeViewModel: HomeViewModel by viewModels()
     private lateinit var downloadViewAdapter2: DownloadViewAdapter2
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val ctx = context ?: return
-        val layoutManager= LinearLayoutManager(ctx, LinearLayoutManager.VERTICAL, true)
-        layoutManager.stackFromEnd=true
+        val layoutManager = LinearLayoutManager(ctx, LinearLayoutManager.VERTICAL, true)
+        layoutManager.stackFromEnd = true
         binding.downloadView.layoutManager = layoutManager
         downloadViewAdapter2 = DownloadViewAdapter2()
         binding.downloadView.adapter = downloadViewAdapter2

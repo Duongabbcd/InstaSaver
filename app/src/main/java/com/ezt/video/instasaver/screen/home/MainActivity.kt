@@ -37,7 +37,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         val navHostFragment = supportFragmentManager
             .findFragmentById(R.id.fragmentContainerView) as NavHostFragment
         val navController = navHostFragment.navController
-        addingNoMediaFiles(getInstaSaverFilePath())
+//        addingNoMediaFiles(getInstaSaverFilePath())
         binding.apply {
             setupWithNavController(binding.activityMainBottomNavigationView, navController)
         }

@@ -29,6 +29,7 @@ import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.viewpager2.widget.ViewPager2
+import com.ezt.video.instasaver.MyApplication
 import com.ezt.video.instasaver.R
 import com.ezt.video.instasaver.base.BaseActivity
 import com.ezt.video.instasaver.databinding.ActivityViewPostBinding
@@ -37,6 +38,10 @@ import com.ezt.video.instasaver.model.CarouselMedia
 import com.ezt.video.instasaver.screen.home.fragment.HomeFragment
 import com.ezt.video.instasaver.screen.view.post.adapter.CarouselViewPagerAdapter
 import com.ezt.video.instasaver.utils.Constants
+import com.ezt.video.instasaver.utils.Constants.IMAGE_FOLDER_NAME
+import com.ezt.video.instasaver.utils.Constants.STORY_FOLDER_NAME
+import com.ezt.video.instasaver.utils.Constants.VIDEO_FOLDER_NAME
+import com.ezt.video.instasaver.utils.FileUtils.getDefaultVideoPath
 import com.ezt.video.instasaver.utils.InvalidLinkException
 import com.ezt.video.instasaver.utils.sdk29AndUp
 import com.ezt.video.instasaver.viewmodel.HomeViewModel
@@ -44,6 +49,7 @@ import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
 import com.squareup.picasso.Picasso
 import dagger.hilt.android.AndroidEntryPoint
+import java.io.File
 import java.util.regex.Pattern
 
 @AndroidEntryPoint
@@ -56,6 +62,7 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
     private lateinit var intentSenderLauncher: ActivityResultLauncher<IntentSenderRequest>
     private var deletedImageUri: Uri? = null
     private var notDeleted = true
+    private  var isPost : Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -67,7 +74,7 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
         val username = post?.getString("username")
         val profilePicture = post?.getString("profilePicture")
         val instagramURL = post?.getString("instagram_url") ?: Constants.INSTAGRAM_HOMEPAGE_LINK
-        val isPost = post?.getBoolean("isStory") ?: false
+        isPost = post?.getBoolean("isStory") ?: false
         var isImage = true
         var isCarousel = false
 
@@ -76,7 +83,7 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
             1 -> {
                 binding.videoView.visibility = View.GONE
                 binding.imageView.visibility = View.VISIBLE
-                val photos = loadPhoto(name, post.getString("imageUrl"))
+                val photos = loadPhoto(name)
                 if (photos != null) {
                     binding.imageView.setImageURI(photos)
                     uri = photos
@@ -86,7 +93,7 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
             2 -> {
                 binding.videoView.visibility = View.VISIBLE
                 binding.imageView.visibility = View.GONE
-                setVideo(loadVideo(name, post.getString("videoUrl")))
+                setVideo(loadVideo(name))
                 isImage = false
             }
 
@@ -139,10 +146,10 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
         for (carousel in carousels) {
             val title = carousel.title ?: "lol"
             if (carousel.media_type == 1) {
-                val uri = loadPhoto(title, carousel.image_url)
+                val uri = loadPhoto(title)
                 medias.add(CarouselMedia(uri, 1))
             } else {
-                val uri = loadVideo(title, carousel.video_url)
+                val uri = loadVideo(title)
                 medias.add(CarouselMedia(uri, 2))
             }
         }
@@ -229,89 +236,48 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
     }
 
 
-    private fun loadPhoto(name: String, imageUrl: String?): Uri? {
-        try {
-            val collection = sdk29AndUp {
-                MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
-            } ?: MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-            val projection = arrayOf(MediaStore.Images.Media._ID)
-            val selection = "${MediaStore.Images.Media.DISPLAY_NAME} == ?"
-            val selectionArgs = arrayOf(name)
-            val uri: Uri? = contentResolver.query(
-                collection,
-                projection,
-                selection,
-                selectionArgs,
-                "${MediaStore.Images.Media.DISPLAY_NAME} ASC"
-            )?.use { cursor ->
-                val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Images.Media._ID)
-                cursor.moveToNext()
-                val id = cursor.getLong(idColumn)
-                val contentUri =
-                    ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id)
-                contentUri
-            }
-            return uri
-        } catch (e: android.database.CursorIndexOutOfBoundsException) {
-            e.printStackTrace()
-            if (imageUrl != null) {
-                val alertDialog = AlertDialog.Builder(this@ViewPostActivity)
-                    .setTitle("Image Not Found!")
-                    .setMessage("The Image is Either deleted, renamed or moved to other media.")
-                    .setPositiveButton("Download Again") { dialogInterface, _ ->
-                        download(imageUrl, true, name)
-                        dialogInterface.dismiss()
-                    }
-                    .setNegativeButton("Cancel") { dialogInterface, _ ->
-                        dialogInterface.dismiss()
-                    }
-                alertDialog.show()
-            }
-            return null
+    private fun loadPhoto(name: String): Uri? {
+        // Your app's private folder: /Android/data/<package>/files/.VideoDownloader/InstaPhoto (or InstaVideo)
+        val photoDir = File(
+            if(isPost)  STORY_FOLDER_NAME else  IMAGE_FOLDER_NAME
+
+        )
+
+        val photoFile = File(photoDir, name)
+
+        return if (photoFile.exists()) {
+            Uri.fromFile(photoFile)
+        } else {
+//            AlertDialog.Builder(this@ViewPostActivity)
+//                .setTitle("Photo Not Found")
+//                .setMessage("The photo may have been deleted, renamed, or moved.")
+//                .setNegativeButton("Close") { d, _ -> d.dismiss() }
+//                .show()
+            null
         }
     }
 
-    private fun loadVideo(name: String, videoUrl: String?): Uri? {
-        try {
-            val collection = sdk29AndUp {
-                MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
-            } ?: MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-            val projection = arrayOf(MediaStore.Video.Media._ID)
-            val selection = "${MediaStore.Video.Media.DISPLAY_NAME} == ?"
-            val selectionArgs = arrayOf(name)
-            val uri: Uri? = contentResolver.query(
-                collection,
-                projection,
-                selection,
-                selectionArgs,
-                "${MediaStore.Video.Media.DISPLAY_NAME} ASC"
-            )?.use { cursor ->
-                val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Video.Media._ID)
-                cursor.moveToNext()
-                val id = cursor.getLong(idColumn)
-                val contentUri =
-                    ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id)
-                contentUri
-            }
-            return uri
-        } catch (e: android.database.CursorIndexOutOfBoundsException) {
-            if (videoUrl != null) {
-                val alertDialog = AlertDialog.Builder(this@ViewPostActivity)
-                    .setTitle("Video Not Found!")
-                    .setMessage("The Video is Either deleted, renamed or moved to other media.")
-                    .setPositiveButton("Download Again") { dialogInterface, _ ->
-                        download(videoUrl, false, name)
-                        dialogInterface.dismiss()
-                    }
-                    .setNegativeButton("Cancel") { dialogInterface, _ ->
-                        dialogInterface.dismiss()
-                    }
-                alertDialog.show()
-            }
-            return null
-        }
 
+    private fun loadVideo(name: String): Uri? {
+        println("loadVideo: $name")
+        val videoDir = File(
+            if(isPost)  STORY_FOLDER_NAME else  VIDEO_FOLDER_NAME
+        )
+
+        val videoFile = File(videoDir, name)
+
+        return if (videoFile.exists()) {
+            Uri.fromFile(videoFile)
+        } else {
+//            AlertDialog.Builder(this@ViewPostActivity)
+//                .setTitle("Video Not Found")
+//                .setMessage("The video may have been deleted, renamed, or moved.")
+//                .setNegativeButton("Close") { d, _ -> d.dismiss() }
+//                .show()
+            null
+        }
     }
+
 
     private fun repost(caption: String, username: String, isImage: Boolean) {
         val repostCaption = Constants.REPOST + "@" + username + " \n" + caption
@@ -434,51 +400,6 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
         }
         Toast.makeText(this@ViewPostActivity, "Post Delete successfully", Toast.LENGTH_SHORT).show()
         finish()
-    }
-
-    private fun download(link: String, isImage: Boolean, title: String) {
-        val loadingDialog = Dialog(this)
-        loadingDialog.setContentView(R.layout.download_loading_dialog)
-        loadingDialog.show()
-        val path = if (isImage) Constants.IMAGE_FOLDER_NAME else Constants.VIDEO_FOLDER_NAME
-        var downloadId = 0L
-        homeViewModel.downloadPost2(link, path, title)
-        homeViewModel.downloadId.observe(this) {
-            downloadId = it
-        }
-
-        lateinit var onComplete: BroadcastReceiver
-        onComplete = object : BroadcastReceiver() {
-            override fun onReceive(context: Context, intent: Intent) {
-                val id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
-                if (id == downloadId) {
-                    if (isImage) {
-                        binding.imageView.setImageURI(loadPhoto(title, null))
-                    } else {
-                        setVideo(loadVideo(title, null))
-                    }
-                    loadingDialog.dismiss()
-                    unregisterReceiver(onComplete)
-                }
-
-            }
-        }
-
-//        registerReceiver(onComplete, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
-        val intentFilter = IntentFilter()
-        intentFilter.addAction(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            registerReceiver(
-                onComplete, intentFilter, RECEIVER_EXPORTED
-            )
-        } else {
-            ContextCompat.registerReceiver(
-                this,
-                onComplete,
-                intentFilter,
-                ContextCompat.RECEIVER_EXPORTED
-            )
-        }
     }
 
 }

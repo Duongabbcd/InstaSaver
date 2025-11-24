@@ -96,6 +96,10 @@ class WatchStoriesActivity :
     }
 
     private fun setOnClickListener() {
+        binding.exitBtn.setOnClickListener {
+            finish()
+        }
+
         binding.profilePicView.setOnClickListener {
             binding.stories.pause()
         }

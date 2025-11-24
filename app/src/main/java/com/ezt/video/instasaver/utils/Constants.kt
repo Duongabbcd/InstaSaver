@@ -2,9 +2,10 @@ package com.ezt.video.instasaver.utils
 
 object Constants {
     const val DATABASE_NAME="Insta_Download"
-    const val VIDEO_FOLDER_NAME = "/InstaSaver/Instagram Videos/"
-    const val IMAGE_FOLDER_NAME = "/InstaSaver/Instagram Images/"
-    const val STORY_FOLDER_NAME = "/InstaSaver/Instagram Stories/"
+     var VIDEO_FOLDER_NAME = ""
+     var IMAGE_FOLDER_NAME = ""
+     var STORY_FOLDER_NAME = ""
+     var AVATAR_FOLDER_NAME = ""
     const val INSTAGRAM_SAVE_LOGIN_LINK="https://www.instagram.com/accounts/onetap/?next=%2F"
     const val INSTAGRAM_HOMEPAGE_LINK="https://www.instagram.com/"
     const val INSTAGRAM="com.instagram.android"

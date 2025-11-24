@@ -35,6 +35,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
     private var downloadID = mutableListOf<Long>()
     private var size: Int = 0
     private lateinit var navigation: DownloadNavigation
+//    private lateinit var downloadViewAdapter: DownloadViewAdapter
 
     private val onCompleteReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
@@ -55,12 +56,14 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        binding.editText.text.clear()
         val sharedPreferences = activity?.getSharedPreferences("Cookies", 0)
         cookies = sharedPreferences?.getString("loginCookies", null)
         setOnClickListeners()
         binding.downloadView.layoutManager =
             LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+//        downloadViewAdapter = DownloadViewAdapter()
+//        binding.downloadView.adapter = downloadViewAdapter
         view.viewTreeObserver?.addOnWindowFocusChangeListener {
             if (cookies != null) {
                 checkClipboard()
@@ -94,14 +97,15 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
 
         binding.downloadButton.setOnClickListener {
             val ctx = context ?: return@setOnClickListener
+            Toast.makeText(ctx, resources.getString(R.string.please_wait), Toast.LENGTH_SHORT).show()
             val postLink = binding.editText.text.toString()
             if (isInstagramLink(postLink)) {
                 download(postLink)
                 hideKeyBoard(binding.downloadButton)
             } else {
-                binding.editText.text.clear()
                 Toast.makeText(ctx, resources.getString(R.string.invalid_link), Toast.LENGTH_SHORT).show()
             }
+            binding.editText.text.clear()
         }
 
         binding.instagramButton.setOnClickListener {

@@ -2,6 +2,7 @@ package com.ezt.video.instasaver.insta
 
 import android.app.DownloadManager
 import android.content.Context
+import android.database.Cursor
 import android.net.Uri
 import android.os.Environment
 import android.util.Log
@@ -12,6 +13,11 @@ import com.ezt.video.instasaver.model.Items
 import com.ezt.video.instasaver.model.ShortCodeMedia
 import com.ezt.video.instasaver.remote.network.InstagramAPI
 import com.ezt.video.instasaver.utils.Constants
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.File
 import javax.inject.Inject
 
 class PostDownloader @Inject constructor(
@@ -70,7 +76,7 @@ class PostDownloader @Inject constructor(
                     } else {
                         item.user = items.user
                         item.caption = items.caption
-                        val currentPost = downloadPost(item)
+                        val currentPost = downloadPost(item, false)
                         downloadId.add(
                             download(
                                 currentPost.downloadLink,
@@ -104,7 +110,7 @@ class PostDownloader @Inject constructor(
     }
 
 
-    private fun downloadPost(item: Items): Post {
+    private fun downloadPost(item: Items, isSavedToFile : Boolean = true): Post {
         var videoUrl: String? = null
         val path: String
         val extension: String
@@ -132,6 +138,19 @@ class PostDownloader @Inject constructor(
         val title = item.user.username + "_" + System.currentTimeMillis().toString() + extension
         val caption: String? = item.caption?.text
 
+
+
+        val avatarFile = File(Constants.AVATAR_FOLDER_NAME, item.user.username + ".jpg")
+        if (avatarFile.exists()) {
+            avatarFile.delete()
+        }
+        println("downloadPost: ${item.user.username}  and $avatarFile and $isSavedToFile")
+        CoroutineScope(Dispatchers.IO).launch {
+            downloadAvatar(context,item.user.profile_pic_url, Constants.AVATAR_FOLDER_NAME, item.user.username + ".jpg")
+        }
+
+
+
         return Post(
             0,
             item.media_type,
@@ -144,78 +163,77 @@ class PostDownloader @Inject constructor(
             downloadLink,
             extension,
             title,
-            null,
+            avatarFile.absolutePath ,
             false, false
         )
     }
 
-    private fun downloadPost2(item: ShortCodeMedia, media_type: String): Post {
-        var videoUrl: String? = null
-        val path: String
-        val extension: String
-        val mediaType: Int
-        var imageUrl = item.display_resources.last().src
-        val downloadLink = when (media_type) {
-            Constants.IMAGE -> {
-                extension = ".jpg"
-                mediaType = 1
-                path = Constants.IMAGE_FOLDER_NAME
-                imageUrl
+    suspend fun downloadAvatar(
+        context: Context,
+        downloadUrl: String,
+        folderName: String,
+        fileName: String
+    ): File? = withContext(Dispatchers.IO) {
+        if (downloadUrl.isEmpty()) return@withContext null
 
-            }
+        // Prepare folder and file
+        val folder = File(context.getExternalFilesDir(null), folderName)
+        if (!folder.exists()) folder.mkdirs()
 
-            Constants.VIDEO -> {
-                extension = ".mp4"
-                mediaType = 2
-                path = Constants.VIDEO_FOLDER_NAME
-                videoUrl = item.video_url
-                videoUrl
-            }
+        val file = File(folder, fileName)
+        if (file.exists()) file.delete() // overwrite safely
 
-            else -> {
-                extension = ".jpg"
-                mediaType = 1
-                path = Constants.IMAGE_FOLDER_NAME
-                imageUrl = item.display_resources.last().src
-                imageUrl
+        // Setup download request
+        val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+        val request = DownloadManager.Request(Uri.parse(downloadUrl))
+            .setAllowedNetworkTypes(
+                DownloadManager.Request.NETWORK_MOBILE or DownloadManager.Request.NETWORK_WIFI
+            )
+            .setTitle(fileName)
+            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+            .setDestinationUri(Uri.fromFile(file))
+
+        val downloadId = dm.enqueue(request)
+
+        // Wait for download to complete
+        var downloading = true
+        while (downloading) {
+            val query = DownloadManager.Query().setFilterById(downloadId)
+            val cursor: Cursor = dm.query(query)
+            if (cursor.moveToFirst()) {
+                val status =
+                    cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))
+                if (status == DownloadManager.STATUS_SUCCESSFUL) {
+                    downloading = false
+                } else if (status == DownloadManager.STATUS_FAILED) {
+                    cursor.close()
+                    return@withContext null
+                }
             }
+            cursor.close()
+            Thread.sleep(100) // small delay to prevent busy loop
         }
-        val title = item.owner.username + "_" + System.currentTimeMillis() + extension
-        val caption: String? =
-            if (item.edge_media_to_caption.edges == null) null else item.edge_media_to_caption.edges?.get(
-                0
-            )?.node?.text
-        return Post(
-            0,
-            mediaType,
-            item.owner.username,
-            item.owner.profile_pic_url,
-            imageUrl,
-            videoUrl,
-            caption,
-            path,
-            downloadLink,
-            extension,
-            title,
-            null,
-            false
-        )
-    }
 
+        return@withContext file
+    }
 
     fun download(downloadLink: String?, path: String?, title: String?): Long {
         val uri: Uri = Uri.parse(downloadLink)
-        val request: DownloadManager.Request = DownloadManager.Request(uri)
-        request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE or DownloadManager.Request.NETWORK_WIFI)
+        val request = DownloadManager.Request(uri)
+
+        request.setAllowedNetworkTypes(
+            DownloadManager.Request.NETWORK_MOBILE or DownloadManager.Request.NETWORK_WIFI
+        )
         request.setTitle(title)
-        request.setDestinationInExternalPublicDir(
-            Environment.DIRECTORY_DOWNLOADS,
-            path + title
-        )
-        return (context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(
-            request
-        )
+
+        // Use absolute path with Uri.fromFile
+        val file = File(path, title)
+        if (file.exists()) file.delete()  // overwrite existing
+        request.setDestinationUri(Uri.fromFile(file))
+
+        return (context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(request)
     }
+
 
 
     private fun getPostCode(link: String): String {

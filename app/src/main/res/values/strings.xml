@@ -50,5 +50,7 @@
     <string name="no_acc_found">No account found</string>
     <string name="recent_searches">Recent Searches</string>
     <string name="current_stories">Current stories</string>
+    <string name="no_download_data">Your Downloaded posts will appear here.</string>
+    <string name="please_wait">Please wait. It will take a few seconds</string>
 
 </resources>
