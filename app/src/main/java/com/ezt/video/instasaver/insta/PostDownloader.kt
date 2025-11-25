@@ -76,7 +76,7 @@ class PostDownloader @Inject constructor(
                     } else {
                         item.user = items.user
                         item.caption = items.caption
-                        val currentPost = downloadPost(item, false)
+                        val currentPost = downloadPost(item)
                         downloadId.add(
                             download(
                                 currentPost.downloadLink,
@@ -110,7 +110,7 @@ class PostDownloader @Inject constructor(
     }
 
 
-    private fun downloadPost(item: Items, isSavedToFile : Boolean = true): Post {
+    private fun downloadPost(item: Items): Post {
         var videoUrl: String? = null
         val path: String
         val extension: String
@@ -144,12 +144,8 @@ class PostDownloader @Inject constructor(
         if (avatarFile.exists()) {
             avatarFile.delete()
         }
-        println("downloadPost: ${item.user.username}  and $avatarFile and $isSavedToFile")
-        CoroutineScope(Dispatchers.IO).launch {
-            downloadAvatar(context,item.user.profile_pic_url, Constants.AVATAR_FOLDER_NAME, item.user.username + ".jpg")
-        }
-
-
+        println("downloadPost: ${item.user.username}  and $avatarFile")
+        download(item.user.profile_pic_url, Constants.AVATAR_FOLDER_NAME, item.user.username + ".jpg")
 
         return Post(
             0,
@@ -168,56 +164,8 @@ class PostDownloader @Inject constructor(
         )
     }
 
-    suspend fun downloadAvatar(
-        context: Context,
-        downloadUrl: String,
-        folderName: String,
-        fileName: String
-    ): File? = withContext(Dispatchers.IO) {
-        if (downloadUrl.isEmpty()) return@withContext null
-
-        // Prepare folder and file
-        val folder = File(context.getExternalFilesDir(null), folderName)
-        if (!folder.exists()) folder.mkdirs()
-
-        val file = File(folder, fileName)
-        if (file.exists()) file.delete() // overwrite safely
-
-        // Setup download request
-        val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-        val request = DownloadManager.Request(Uri.parse(downloadUrl))
-            .setAllowedNetworkTypes(
-                DownloadManager.Request.NETWORK_MOBILE or DownloadManager.Request.NETWORK_WIFI
-            )
-            .setTitle(fileName)
-            .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-            .setDestinationUri(Uri.fromFile(file))
-
-        val downloadId = dm.enqueue(request)
-
-        // Wait for download to complete
-        var downloading = true
-        while (downloading) {
-            val query = DownloadManager.Query().setFilterById(downloadId)
-            val cursor: Cursor = dm.query(query)
-            if (cursor.moveToFirst()) {
-                val status =
-                    cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))
-                if (status == DownloadManager.STATUS_SUCCESSFUL) {
-                    downloading = false
-                } else if (status == DownloadManager.STATUS_FAILED) {
-                    cursor.close()
-                    return@withContext null
-                }
-            }
-            cursor.close()
-            Thread.sleep(100) // small delay to prevent busy loop
-        }
-
-        return@withContext file
-    }
-
     fun download(downloadLink: String?, path: String?, title: String?): Long {
+        println("download: path $path  title $title")
         val uri: Uri = Uri.parse(downloadLink)
         val request = DownloadManager.Request(uri)
 
@@ -228,7 +176,10 @@ class PostDownloader @Inject constructor(
 
         // Use absolute path with Uri.fromFile
         val file = File(path, title)
-        if (file.exists()) file.delete()  // overwrite existing
+        if(file.exists()) {
+            println("The file is exist")
+            file.delete()
+        }
         request.setDestinationUri(Uri.fromFile(file))
 
         return (context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(request)

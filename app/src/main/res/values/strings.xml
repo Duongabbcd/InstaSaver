@@ -52,5 +52,6 @@
     <string name="current_stories">Current stories</string>
     <string name="no_download_data">Your Downloaded posts will appear here.</string>
     <string name="please_wait">Please wait. It will take a few seconds</string>
+    <string name="post_deleted">Post deleted successfully</string>
 
 </resources>

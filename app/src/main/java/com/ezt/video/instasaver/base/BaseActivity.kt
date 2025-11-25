@@ -22,6 +22,11 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import com.ezt.video.instasaver.R
 import com.ezt.video.instasaver.screen.home.MainActivity
+import com.ezt.video.instasaver.utils.Constants.AVATAR_FOLDER_NAME
+import java.io.File
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.iterator
 
 typealias Inflate<T> = (LayoutInflater) -> T
 

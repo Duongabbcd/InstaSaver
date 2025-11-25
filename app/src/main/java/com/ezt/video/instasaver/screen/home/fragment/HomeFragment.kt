@@ -23,8 +23,13 @@ import com.ezt.video.instasaver.viewmodel.HomeViewModel
 import kotlin.toString
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
+import com.ezt.video.instasaver.utils.Constants.AVATAR_FOLDER_NAME
 import com.ezt.video.instasaver.viewmodel.StoryViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import java.io.File
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.iterator
 
 @AndroidEntryPoint
 class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::inflate) {
@@ -96,6 +101,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         }
 
         binding.downloadButton.setOnClickListener {
+            checkDuplicateAvatars()
             val ctx = context ?: return@setOnClickListener
             Toast.makeText(ctx, resources.getString(R.string.please_wait), Toast.LENGTH_SHORT).show()
             val postLink = binding.editText.text.toString()
@@ -118,6 +124,42 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
             navigation.navigateToDownload()
         }
 
+    }
+
+    private fun checkDuplicateAvatars() {
+        val folder = File(AVATAR_FOLDER_NAME)
+        val files = folder.listFiles() ?: return
+
+        // Group by base name
+        val groups = files.groupBy { file ->
+            file.name.replace(Regex("-\\d+(?=\\.)"), "")
+        }
+
+        for ((baseName, fileGroup) in groups) {
+
+            // Find original file (the one WITHOUT -1, -2, etc.)
+            val original = fileGroup.find { !it.name.matches(Regex(".*-\\d+\\..+")) }
+
+            if (original != null) {
+                println("Keeping original: ${original.name}")
+
+                // Delete all duplicates
+                fileGroup.filter { it != original }.forEach { dup ->
+                    val deleted = dup.delete()
+                    println("Deleting duplicate: ${dup.name} → $deleted")
+                }
+
+            } else {
+                // No clean original file exists → keep the smallest-numbered one
+                val fallback = fileGroup.sortedBy { it.name }.first()
+                println("Fallback keep: ${fallback.name}")
+
+                fileGroup.filter { it != fallback }.forEach { dup ->
+                    val deleted = dup.delete()
+                    println("Deleting duplicate(FALLBACK): ${dup.name} → $deleted")
+                }
+            }
+        }
     }
 
     private fun checkClipboard() {

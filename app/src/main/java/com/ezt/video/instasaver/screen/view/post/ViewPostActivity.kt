@@ -29,6 +29,7 @@ import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.viewpager2.widget.ViewPager2
+import com.bumptech.glide.Glide
 import com.ezt.video.instasaver.MyApplication
 import com.ezt.video.instasaver.R
 import com.ezt.video.instasaver.base.BaseActivity
@@ -62,7 +63,7 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
     private lateinit var intentSenderLauncher: ActivityResultLauncher<IntentSenderRequest>
     private var deletedImageUri: Uri? = null
     private var notDeleted = true
-    private  var isPost : Boolean = false
+    private var isPost: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,7 +73,15 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
         val mediaType = post?.getInt("media_type", 1)
         val caption = post?.getString("caption") ?: ""
         val username = post?.getString("username")
-        val profilePicture = post?.getString("profilePicture")
+        val profilePicture = File(Constants.AVATAR_FOLDER_NAME, username.plus(".jpg"))
+        println("DownloadViewHolder file path 1 $username $profilePicture")
+
+        if (profilePicture.exists()) {
+            Glide.with(this@ViewPostActivity).load(Uri.fromFile(profilePicture))
+                .into(binding.profilePicView)
+        }
+
+
         val instagramURL = post?.getString("instagram_url") ?: Constants.INSTAGRAM_HOMEPAGE_LINK
         isPost = post?.getBoolean("isStory") ?: false
         var isImage = true
@@ -107,7 +116,6 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
         }
 
         binding.captionView.text = caption
-        Picasso.get().load(profilePicture).into(binding.profilePicView)
         binding.usernameView.text = username
         setOnClickListeners(isImage, instagramURL, caption, username ?: "", isCarousel)
         initIntentSenderLauncher()
@@ -196,7 +204,11 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
         }
 
         binding.delete.setOnClickListener {
-            deletePost(instagramUrl, isCarousel)
+            try {
+                deletePost(instagramUrl, isCarousel)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
 
         binding.menu.setOnClickListener {
@@ -239,7 +251,7 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
     private fun loadPhoto(name: String): Uri? {
         // Your app's private folder: /Android/data/<package>/files/.VideoDownloader/InstaPhoto (or InstaVideo)
         val photoDir = File(
-            if(isPost)  STORY_FOLDER_NAME else  IMAGE_FOLDER_NAME
+            if (isPost) STORY_FOLDER_NAME else IMAGE_FOLDER_NAME
 
         )
 
@@ -261,7 +273,7 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
     private fun loadVideo(name: String): Uri? {
         println("loadVideo: $name")
         val videoDir = File(
-            if(isPost)  STORY_FOLDER_NAME else  VIDEO_FOLDER_NAME
+            if (isPost) STORY_FOLDER_NAME else VIDEO_FOLDER_NAME
         )
 
         val videoFile = File(videoDir, name)
@@ -350,30 +362,37 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
     }
 
     private fun deleteFile(uri: Uri) {
+        if (uri.scheme == "file") {
+            val file = File(uri.path!!)
+            val deleted = file.delete()
+            println("Deleted FILE: ${file.absolutePath} → $deleted")
+            return
+        }
+
+        // Fallback for content:// URIs (MediaStore)
         try {
             contentResolver.delete(uri, null, null)
         } catch (e: SecurityException) {
-            try {
-                val intentSender = when {
-                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> {
-                        MediaStore.createDeleteRequest(contentResolver, listOf(uri)).intentSender
-                    }
-
-                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
-                        val recoverableSecurityException = e as? RecoverableSecurityException
-                        recoverableSecurityException?.userAction?.actionIntent?.intentSender
-                    }
-
-                    else -> null
+            // For Android Q+ recoverable deletion
+            val intentSender = when {
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> {
+                    MediaStore.createDeleteRequest(contentResolver, listOf(uri)).intentSender
                 }
-                intentSender?.let {
-                    intentSenderLauncher.launch(IntentSenderRequest.Builder(it).build())
+
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q -> {
+                    (e as? RecoverableSecurityException)
+                        ?.userAction
+                        ?.actionIntent
+                        ?.intentSender
                 }
-            } catch (e: InvalidLinkException) {
-                Toast.makeText(this@ViewPostActivity, e.message, Toast.LENGTH_SHORT).show()
+
+                else -> null
+            }
+
+            intentSender?.let {
+                intentSenderLauncher.launch(IntentSenderRequest.Builder(it).build())
             }
         }
-
     }
 
 

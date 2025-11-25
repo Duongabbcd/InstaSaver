@@ -78,7 +78,10 @@ class DownloadViewAdapter(private val load: Boolean, private val allPosts: List<
 
                 val avatarFile = File(Constants.AVATAR_FOLDER_NAME, post.username.plus(".jpg"))
                 println("DownloadViewHolder file path 1 ${post.username} $avatarFile")
-                Glide.with(context).load(Uri.fromFile(avatarFile)).into(profilePicView)
+                println("DownloadViewHolder file path 2 ${avatarFile.exists()}")
+                if(avatarFile.exists()) {
+                    Glide.with(context).load(Uri.fromFile(avatarFile)).into(profilePicView)
+                }
                 root.setOnClickListener {
                     val viewIntent = Intent(context, ViewPostActivity::class.java)
                     val postDetail = Bundle()

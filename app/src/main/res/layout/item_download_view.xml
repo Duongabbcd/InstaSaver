@@ -61,16 +61,14 @@
     <TextView
         android:id="@+id/captionView"
         android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/_10sdp"
         android:layout_marginTop="@dimen/_8sdp"
         android:layout_marginEnd="@dimen/_8sdp"
-        android:layout_marginBottom="@dimen/_8sdp"
         android:ellipsize="end"
         style="@style/CustomTextStyle12sp"
         android:gravity="start"
-        android:maxLines="3"
-        app:layout_constraintBottom_toBottomOf="@+id/imageView"
+        android:maxLines="2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/imageView"
         app:layout_constraintTop_toBottomOf="@+id/profilePicView" />

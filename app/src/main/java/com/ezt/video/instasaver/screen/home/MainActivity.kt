@@ -21,6 +21,7 @@ import com.ezt.video.instasaver.R
 import com.ezt.video.instasaver.screen.home.fragment.HomeFragment
 import androidx.navigation.fragment.NavHostFragment
 import com.ezt.video.instasaver.utils.Constants
+import com.ezt.video.instasaver.utils.Constants.AVATAR_FOLDER_NAME
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
 import java.io.IOException
@@ -103,32 +104,6 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         val clipboard = this.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
         val emptyClip = ClipData.newPlainText("", "")
         clipboard.setPrimaryClip(emptyClip)
-    }
-
-    private fun addingNoMediaFiles(videoDownloaderPath: String) {
-
-        val folder = File(videoDownloaderPath)
-
-        if (!folder.exists()) {
-            folder.mkdirs()  // Create folder if it doesn't exist
-        }
-
-        val nomediaFile = File(folder, ".nomedia")
-
-        if (!nomediaFile.exists()) {
-            try {
-                val created = nomediaFile.createNewFile()
-                if (created) {
-                    println(".nomedia file created")
-                } else {
-                    println("Failed to create .nomedia file")
-                }
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
-        } else {
-            println(".nomedia already exists")
-        }
     }
 
     companion object {
