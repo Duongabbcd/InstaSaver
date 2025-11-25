@@ -16,6 +16,7 @@ import com.ezt.video.instasaver.R
 import com.ezt.video.instasaver.databinding.ItemDownloadViewBinding
 import com.ezt.video.instasaver.local.Post
 import com.ezt.video.instasaver.screen.view.post.ViewPostActivity
+import com.ezt.video.instasaver.utils.Common.gone
 import com.ezt.video.instasaver.utils.Constants
 import com.squareup.picasso.Picasso
 import java.io.File

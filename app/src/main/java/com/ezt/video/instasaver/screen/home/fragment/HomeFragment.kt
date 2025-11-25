@@ -1,5 +1,6 @@
 package com.ezt.video.instasaver.screen.home.fragment
 
+import android.app.Dialog
 import android.app.DownloadManager
 import android.content.BroadcastReceiver
 import android.content.ClipDescription.MIMETYPE_TEXT_PLAIN
@@ -23,6 +24,8 @@ import com.ezt.video.instasaver.viewmodel.HomeViewModel
 import kotlin.toString
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
+import com.ezt.video.instasaver.utils.Common.gone
+import com.ezt.video.instasaver.utils.Common.visible
 import com.ezt.video.instasaver.utils.Constants.AVATAR_FOLDER_NAME
 import com.ezt.video.instasaver.viewmodel.StoryViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -40,22 +43,33 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
     private var downloadID = mutableListOf<Long>()
     private var size: Int = 0
     private lateinit var navigation: DownloadNavigation
-//    private lateinit var downloadViewAdapter: DownloadViewAdapter
+
+    //    private lateinit var downloadViewAdapter: DownloadViewAdapter
+    private lateinit var loadingDialog: Dialog
 
     private val onCompleteReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
+            println("onCompleteReceiver: $downloadID and $id")
+            val holder = binding.downloadView.findViewHolderForAdapterPosition(0)
+                    as? DownloadViewAdapter.DownloadViewHolder
+            holder?.loadingViewStub?.visible()
+
             if (id != -1L && downloadID.contains(id)) {
                 downloadID.remove(id)
-                println("onCompleteReceiver: $downloadID")
-                if (downloadID.isEmpty()) {
-                    binding.progressBar.visibility = View.GONE
-                    val holder = binding.downloadView.findViewHolderForAdapterPosition(0)
-                            as? DownloadViewAdapter.DownloadViewHolder
-                    holder?.loadingViewStub?.visibility = View.GONE
-                    holder?.layout?.isClickable = true
+                viewModel.allPosts.observe(viewLifecycleOwner) {
+                    load = false
+                    binding.downloadView.adapter = DownloadViewAdapter(load, it)
+                    size = it.size
                 }
+
+                loadingDialog.dismiss()
+
+                binding.progressBar.visibility = View.GONE
+                holder?.layout?.isClickable = true
             }
+            holder?.loadingViewStub?.gone()
+
         }
     }
 
@@ -101,17 +115,25 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         }
 
         binding.downloadButton.setOnClickListener {
-            checkDuplicateAvatars()
-            val ctx = context ?: return@setOnClickListener
-            Toast.makeText(ctx, resources.getString(R.string.please_wait), Toast.LENGTH_SHORT).show()
-            val postLink = binding.editText.text.toString()
-            if (isInstagramLink(postLink)) {
-                download(postLink)
-                hideKeyBoard(binding.downloadButton)
-            } else {
-                Toast.makeText(ctx, resources.getString(R.string.invalid_link), Toast.LENGTH_SHORT).show()
+            withSafeContext { ctx ->
+                loadingDialog = Dialog(ctx)
+                loadingDialog.setContentView(R.layout.download_loading_dialog)
+                loadingDialog.setCancelable(false)
+                loadingDialog.show()
+
+                Toast.makeText(ctx, resources.getString(R.string.please_wait), Toast.LENGTH_SHORT)
+                    .show()
+                val postLink = binding.editText.text.toString()
+                if (isInstagramLink(postLink)) {
+                    download(postLink)
+                    hideKeyBoard(binding.downloadButton)
+                } else {
+                    Toast.makeText(ctx, resources.getString(R.string.invalid_link), Toast.LENGTH_SHORT)
+                        .show()
+                }
+                binding.editText.text.clear()
             }
-            binding.editText.text.clear()
+
         }
 
         binding.instagramButton.setOnClickListener {
@@ -179,11 +201,11 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         if (cookies == null) {
             startActivity(Intent(context, RequestLoginActivity::class.java))
         } else {
-            if(link.contains("stories")) {
+            if (link.contains("stories")) {
                 val searchUser = getStoryUsername(link) ?: ""
                 cookies?.let { cookie ->
                     storyViewModel.searchUser(searchUser, cookie)
-                    storyViewModel.searchResult.observe(viewLifecycleOwner)  {
+                    storyViewModel.searchResult.observe(viewLifecycleOwner) {
                         val result = it.first()
                         storyViewModel.fetchStory(result.user.pk, cookie)
                     }
@@ -214,7 +236,10 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
             val url = link.substring(totalIndex, link.length)
             isInstagramLink = url.length >= 14
         }
-        val isPostLink = link.contains("/p/") || link.contains("/tv/") || link.contains("/reel/") || link.contains("/stories/")
+        val isPostLink =
+            link.contains("/p/") || link.contains("/tv/") || link.contains("/reel/") || link.contains(
+                "/stories/"
+            )
         return isInstagramLink && isPostLink
     }
 
