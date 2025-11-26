@@ -21,6 +21,27 @@ interface PostDao {
     @Query("SELECT * FROM post_table ORDER BY id DESC limit 5")
     fun getRecentDownloads(): LiveData<List<Post>>
 
+    @Query("SELECT * FROM post_table WHERE username LIKE '%' || :name || '%' ORDER BY id")
+    fun getPostsByUsername(name: String): List<Post>
+    @Query("SELECT * FROM post_table WHERE username LIKE '%' || :name || '%'   AND media_type = 1 ORDER BY id")
+    fun getPhotoPostsByUsername(name: String): List<Post>
+
+    @Query("SELECT * FROM post_table WHERE username LIKE '%' || :name || '%'   AND media_type = 2 ORDER BY id")
+    fun getVideoPostsByUsername(name: String): List<Post>
+
+    @Query("SELECT * FROM post_table WHERE username LIKE '%' || :name || '%'   AND media_type = 8 ORDER BY id")
+    fun getCarouselPostsByUsername(name: String): List<Post>
+
+
+    @Query("SELECT * FROM post_table WHERE media_type = 8 ORDER BY id")
+    fun getCarouselPosts(): List<Post>
+
+    @Query("SELECT * FROM post_table WHERE media_type = 2 ORDER BY id")
+    fun getVideoPosts(): List<Post>
+
+    @Query("SELECT * FROM post_table WHERE media_type = 1 ORDER BY id")
+    fun getPhotoPosts(): List<Post>
+
     @Query("SELECT COUNT(id) FROM post_table ")
     fun getFileCount(): LiveData<Int>
 

@@ -15,6 +15,7 @@
     <string name="previous">Previous</string>
     <string name="edittext_hint">Enter username or paste story url</string>
     <string name="dp_hint">Enter username or paste profile url</string>
+    <string name="user_hint">Enter username</string>
     <string name="hello_first_fragment">Hello first fragment</string>
     <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
     <string name="searching">Searching…</string>
@@ -53,5 +54,14 @@
     <string name="no_download_data">Your Downloaded posts will appear here.</string>
     <string name="please_wait">Please wait. It will take a few seconds</string>
     <string name="post_deleted">Post deleted successfully</string>
+
+    <string name="downloaded_media_files">Downloaded Media Files</string>
+
+    <string name="show_more">More</string>
+    <string name="show_less">Less</string>
+
+    <string name="video_option">Video</string>
+    <string name="photo_option">Photo</string>
+    <string name="collection_option">Carousel</string>
 
 </resources>

@@ -89,9 +89,6 @@ class StoryFragment : BaseFragment<FragmentStoryBinding>(FragmentStoryBinding::i
 
         storyViewModel.reelTray.observe(viewLifecycleOwner) {
             reelTrays = it.toMutableList()
-            if (reelTrays[0].user == null) {
-                reelTrays.removeAt(0)
-            }
             setReelTrayRecyclerView()
         }
 

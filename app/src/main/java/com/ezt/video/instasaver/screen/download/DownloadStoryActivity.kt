@@ -103,15 +103,15 @@ class DownloadStoryActivity :
             binding.downloadView.adapter=adapter
             stories=it
             binding.progressBar.visibility=View.GONE
-            if(it.isEmpty()){
-                if(binding.noStoriesFoundViewStub.parent!=null){
-                    binding.noStoriesFoundViewStub.inflate()
-                }else{
-                    binding.noStoriesFoundViewStub.visibility=View.VISIBLE
-                }
-            }else{
-                binding.noStoriesFoundViewStub.visibility=View.GONE
-            }
+//            if(it.isEmpty()){
+//                if(binding.noStoriesFoundViewStub.parent!=null){
+//                    binding.noStoriesFoundViewStub.inflate()
+//                }else{
+//                    binding.noStoriesFoundViewStub.visibility=View.VISIBLE
+//                }
+//            }else{
+//                binding.noStoriesFoundViewStub.visibility=View.GONE
+//            }
 
         }
 

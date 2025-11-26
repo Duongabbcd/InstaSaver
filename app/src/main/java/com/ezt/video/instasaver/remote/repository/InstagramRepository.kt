@@ -20,6 +20,44 @@ class InstagramRepository @Inject constructor(private val postDao: PostDao,priva
     val getAllPost = postDao.getAllPosts()
     val getRecentDownload = postDao.getRecentDownloads()
 
+    suspend fun fetchPostByUser(
+        userName: String,
+    ) : List<Post> {
+        return postDao.getPostsByUsername(userName)
+    }
+
+    suspend fun fetchVideoPostByUser(
+        userName: String,
+    ) : List<Post> {
+        return postDao.getPhotoPostsByUsername(userName)
+    }
+
+    suspend fun fetchPhotoPostByUser(
+        userName: String,
+    ) : List<Post> {
+        return postDao.getVideoPostsByUsername(userName)
+    }
+
+    suspend fun fetchCarouselPostByUser(
+        userName: String,
+    ) : List<Post> {
+        return postDao.getCarouselPostsByUsername(userName)
+    }
+
+    suspend fun fetchCarouselPosts(
+    ) : List<Post> {
+        return postDao.getCarouselPosts()
+    }
+
+    suspend fun fetchPhotoPosts(
+    ) : List<Post> {
+        return postDao.getPhotoPosts()
+    }
+
+    suspend fun fetchVideoPosts(
+    ) : List<Post> {
+        return postDao.getVideoPosts()
+    }
 
     suspend fun fetchPost(url: String, map: String): MutableList<Long>{
         return postDownloader.fetchDownloadLink(url,map)

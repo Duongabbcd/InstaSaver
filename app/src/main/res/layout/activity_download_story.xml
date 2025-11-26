@@ -20,6 +20,7 @@
 
     <ViewStub
         android:id="@+id/no_stories_found_view_stub"
+        android:visibility="gone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout="@layout/no_stories_found"

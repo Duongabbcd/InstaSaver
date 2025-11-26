@@ -17,6 +17,10 @@
         <action
             android:id="@+id/action_home_to_DPViewerFragment"
             app:destination="@id/DPViewerFragment" />
+
+        <action
+            android:id="@+id/action_home_to_ProfileFragment"
+            app:destination="@id/profileFragment" />
     </fragment>
     <fragment
         android:id="@+id/downloads"
@@ -39,6 +43,17 @@
     </fragment>
     <fragment
         android:id="@+id/DPViewerFragment"
+        android:name="com.ezt.video.instasaver.screen.home.dpviewer.DPViewerFragment"
+        android:label="dp_viewer_fragment"
+        tools:layout="@layout/fragment_dp_viewer" >
+        <argument
+            android:name="cookie"
+            app:argType="string"
+            />
+    </fragment>
+
+    <fragment
+        android:id="@+id/profileFragment"
         android:name="com.ezt.video.instasaver.screen.home.dpviewer.DPViewerFragment"
         android:label="dp_viewer_fragment"
         tools:layout="@layout/fragment_dp_viewer" >

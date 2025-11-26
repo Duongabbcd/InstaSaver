@@ -7,12 +7,11 @@
     android:paddingTop="@dimen/_40sdp"
     android:background="@color/backgroundColor">
 
-
     <TextView
         android:id="@+id/instaAce"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Downloads"
+        android:text="@string/downloaded_media_files"
         style="@style/CustomTextStyleBold20sp"
         android:textColor="@color/black"
         app:layout_constraintEnd_toEndOf="parent"
@@ -45,19 +44,80 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:ignore="ContentDescription" />
 
-    <ImageButton
-        android:id="@+id/cancel"
-        android:layout_width="wrap_content"
+    <EditText
+        android:id="@+id/searchView"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/_16sdp"
-        android:layout_marginTop="15dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@drawable/ic_baseline_clear_24"
+        android:layout_marginStart="@dimen/_10sdp"
+        android:layout_marginEnd="@dimen/_4sdp"
+        android:layout_marginTop="@dimen/_12sdp"
+        android:background="@drawable/edittext_background"
+        android:elevation="@dimen/_2sdp"
+        android:hint="@string/user_hint"
+        android:inputType="textPersonName"
+        android:paddingVertical="@dimen/_8sdp"
+        android:paddingHorizontal="@dimen/_12sdp"
+        style="@style/CustomTextStyle16sp"
+        android:imeOptions="actionSearch"
+        android:drawableEnd="@drawable/baseline_close_black_24"
+        app:layout_constraintTop_toBottomOf="@+id/instaAce"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/showTitle"/>
+
+    <TextView
+        android:id="@+id/showTitle"
+        android:textColor="@color/main"
+        style="@style/CustomTextStyle14sp"
+        android:padding="@dimen/_6sdp"
+        android:layout_marginEnd="@dimen/_4sdp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/searchView"
+        app:layout_constraintBottom_toBottomOf="@id/searchView"
+        android:text="@string/show_more"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <LinearLayout
+        android:id="@+id/bonusOptions"
         android:visibility="gone"
-        app:layout_constraintStart_toEndOf="@id/backButton"
-        app:layout_constraintTop_toTopOf="@id/backButton"
-        app:layout_constraintBottom_toBottomOf="@id/backButton"
-        tools:ignore="ContentDescription" />
+        android:layout_marginStart="@dimen/_10sdp"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/searchView"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/video"
+            android:padding="@dimen/_4sdp"
+            android:text="@string/video_option"
+            style="@style/CustomTextStyle14sp"
+            android:textColor="@color/black"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/photo"
+            android:layout_marginStart="@dimen/_10sdp"
+            android:padding="@dimen/_4sdp"
+            android:text="@string/photo_option"
+            style="@style/CustomTextStyle14sp"
+            android:textColor="@color/black"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+
+        <TextView
+            android:id="@+id/carousel"
+            android:layout_marginStart="@dimen/_10sdp"
+            android:padding="@dimen/_4sdp"
+            android:text="@string/collection_option"
+            android:textColor="@color/black"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
 
     <ImageButton
         android:id="@+id/faqButton"
@@ -75,10 +135,11 @@
         android:id="@+id/downloadView"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginTop="@dimen/_10sdp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/instaAce"
+        app:layout_constraintTop_toBottomOf="@+id/bonusOptions"
         tools:listitem="@layout/item_download_view" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

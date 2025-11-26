@@ -104,6 +104,15 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
             }
         }
 
+        binding.textView11.setOnClickListener {
+            if (cookies == null) {
+                startActivity(Intent(context, RequestLoginActivity::class.java))
+            } else {
+                Navigation.findNavController(it)
+                    .navigate(HomeFragmentDirections.actionHomeToStoryFragment(cookies ?: ""))
+            }
+        }
+
         binding.dpButton.setOnClickListener {
             if (cookies == null) {
                 startActivity(Intent(context, RequestLoginActivity::class.java))
@@ -113,6 +122,35 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
             }
 
         }
+
+         binding.textView12.setOnClickListener {
+            if (cookies == null) {
+                startActivity(Intent(context, RequestLoginActivity::class.java))
+            } else {
+                Navigation.findNavController(it)
+                    .navigate(HomeFragmentDirections.actionHomeToDPViewerFragment(cookies ?: ""))
+            }
+
+        }
+
+        binding.profileButton.setOnClickListener  {
+            if (cookies == null) {
+                startActivity(Intent(context, RequestLoginActivity::class.java))
+            } else {
+                Navigation.findNavController(it)
+                    .navigate(HomeFragmentDirections.actionHomeToProfileFragment(cookies ?: ""))
+            }
+        }
+
+        binding.textView13.setOnClickListener  {
+                if (cookies == null) {
+                    startActivity(Intent(context, RequestLoginActivity::class.java))
+                } else {
+                    Navigation.findNavController(it)
+                        .navigate(HomeFragmentDirections.actionHomeToProfileFragment(cookies ?: ""))
+                }
+        }
+
 
         binding.downloadButton.setOnClickListener {
             withSafeContext { ctx ->
