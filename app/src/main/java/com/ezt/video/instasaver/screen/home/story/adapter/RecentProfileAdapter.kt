@@ -9,6 +9,7 @@ import com.ezt.video.instasaver.databinding.ItemStorySearchViewBinding
 import com.ezt.video.instasaver.local.ProfileRecent
 import com.ezt.video.instasaver.local.StoryRecent
 import com.ezt.video.instasaver.screen.download.DownloadStoryActivity
+import com.ezt.video.instasaver.screen.home.profile.ViewProfileActivity
 import com.squareup.picasso.Picasso
 
 class RecentProfileAdapter(private val dataHolder: List<ProfileRecent>, private val cookies: String) :
@@ -43,6 +44,12 @@ class RecentProfileAdapter(private val dataHolder: List<ProfileRecent>, private 
                 fullNameView.text = profileRecent.full_name
                 root.setOnClickListener {
                     println("RecentProfileViewHolder: ${profileRecent.username}")
+                    val intent = Intent(context, ViewProfileActivity::class.java)
+                    intent.putExtra("username", profileRecent.username)
+                    intent.putExtra("fullName", profileRecent.full_name)
+                    intent.putExtra("cookies", cookies)
+                    intent.putExtra("userId", profileRecent.pk)
+                    context.startActivity(intent)
                 }
             }
         }

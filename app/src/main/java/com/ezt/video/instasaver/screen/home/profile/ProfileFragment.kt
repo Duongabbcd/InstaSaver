@@ -14,10 +14,7 @@ import com.ezt.video.instasaver.R
 import com.ezt.video.instasaver.base.BaseFragment
 import com.ezt.video.instasaver.databinding.FragmentProfileBinding
 import com.ezt.video.instasaver.screen.home.dpviewer.adapter.StorySearchViewAdapter
-import com.ezt.video.instasaver.screen.home.story.StoryFragmentArgs
 import com.ezt.video.instasaver.screen.home.story.adapter.RecentProfileAdapter
-import com.ezt.video.instasaver.screen.home.story.adapter.RecentViewAdapter
-import com.ezt.video.instasaver.screen.view.ViewDPActivity
 import com.ezt.video.instasaver.utils.Utils.hideKeyBoard
 import com.ezt.video.instasaver.viewmodel.DPViewerViewModel
 import dagger.hilt.android.AndroidEntryPoint

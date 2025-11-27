@@ -4,6 +4,7 @@ import android.app.DownloadManager
 import android.content.Context
 import android.net.Uri
 import android.os.Environment
+import android.util.Log
 import android.widget.Toast
 import com.ezt.video.instasaver.local.Post
 import com.ezt.video.instasaver.local.PostDao
@@ -13,6 +14,7 @@ import com.ezt.video.instasaver.model.Story
 import com.ezt.video.instasaver.model.StoryHighlight
 import com.ezt.video.instasaver.remote.network.InstagramAPI
 import com.ezt.video.instasaver.utils.Constants
+import retrofit2.HttpException
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale

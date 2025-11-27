@@ -26,6 +26,7 @@ class InstagramLoginActivity : BaseActivity<ActivityInstagramLoginBinding>(Activ
     private fun setUpWebViewAndButton() {
         val myWebView: WebView = binding.webView
         myWebView.settings.javaScriptEnabled=true
+        myWebView.loadUrl("https://www.instagram.com/accounts/login/")
         myWebView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView, url: String) {
                 super.onPageFinished(myWebView, url)
@@ -39,7 +40,6 @@ class InstagramLoginActivity : BaseActivity<ActivityInstagramLoginBinding>(Activ
                 }
             }
         }
-        myWebView.loadUrl("https://www.instagram.com/accounts/login/")
         binding.button.setOnClickListener {
             saveCookies()
             startActivity(Intent(this@InstagramLoginActivity, MainActivity::class.java).apply {
