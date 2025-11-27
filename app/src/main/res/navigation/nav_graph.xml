@@ -54,9 +54,9 @@
 
     <fragment
         android:id="@+id/profileFragment"
-        android:name="com.ezt.video.instasaver.screen.home.dpviewer.DPViewerFragment"
-        android:label="dp_viewer_fragment"
-        tools:layout="@layout/fragment_dp_viewer" >
+        android:name="com.ezt.video.instasaver.screen.home.profile.ProfileFragment"
+        android:label="profile_fragment"
+        tools:layout="@layout/fragment_profile" >
         <argument
             android:name="cookie"
             app:argType="string"

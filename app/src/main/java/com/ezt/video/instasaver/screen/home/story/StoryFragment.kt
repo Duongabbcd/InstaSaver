@@ -87,8 +87,11 @@ class StoryFragment : BaseFragment<FragmentStoryBinding>(FragmentStoryBinding::i
             binding.recentView.adapter = RecentViewAdapter( it, cookies)
         }
 
-        storyViewModel.reelTray.observe(viewLifecycleOwner) {
-            reelTrays = it.toMutableList()
+        storyViewModel.reelTray.observe(viewLifecycleOwner) { data ->
+            data.onEach {
+                println("reelTray: $it")
+            }
+            reelTrays = data.toMutableList()
             setReelTrayRecyclerView()
         }
 

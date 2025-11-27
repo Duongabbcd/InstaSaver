@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ezt.video.instasaver.local.DPRecent
 import com.ezt.video.instasaver.local.Post
+import com.ezt.video.instasaver.local.ProfileRecent
 import com.ezt.video.instasaver.model.SearchUser
 import com.ezt.video.instasaver.model.User
 import com.ezt.video.instasaver.remote.repository.InstagramRepository
@@ -16,6 +17,7 @@ import javax.inject.Inject
 class DPViewerViewModel @Inject constructor(private val instagramRepository: InstagramRepository) : ViewModel()  {
     var searchResult= MutableLiveData<List<SearchUser>>()
     var recents= MutableLiveData<List<DPRecent>>()
+    var profileRecent= MutableLiveData<List<ProfileRecent>>()
     var profilePicUrl= MutableLiveData<String>()
 
 
@@ -31,10 +33,21 @@ class DPViewerViewModel @Inject constructor(private val instagramRepository: Ins
             instagramRepository.insertDPRecent(user)
         }
     }
+    fun insertProfileRecent(user: User){
+        viewModelScope.launch {
+            instagramRepository.insertProfileRecent(user)
+        }
+    }
 
     fun getRecentSearches(){
         viewModelScope.launch {
             recents.postValue(instagramRepository.getRecentDPSearch())
+        }
+    }
+
+    fun getRecentProfileSearches(){
+        viewModelScope.launch {
+            profileRecent.postValue(instagramRepository.getRecentProfileSearch())
         }
     }
 

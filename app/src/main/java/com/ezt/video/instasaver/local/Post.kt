@@ -58,6 +58,18 @@ data class DPRecent(
     var id: Int = 0
 }
 
+@Entity(tableName="profile_recent_table",indices = [Index(value = ["username"], unique = true)])
+data class ProfileRecent(
+    val pk: Long,
+    val username: String,
+    val full_name: String,
+    val profile_pic_url: String,
+){
+    @PrimaryKey(autoGenerate = true)
+    var id: Int = 0
+}
+
+
 
 
 

@@ -37,4 +37,15 @@ interface InstagramAPI {
     @GET
     suspend fun getDP(@Url url: String, @Header("Cookie",) map: String,@Header("User-Agent") userAgent:String): UserResponse
 
+    @GET("accounts/current_user/")
+    suspend fun getCurrentUser(
+        @Header("Cookie") cookie: String,
+        @Header("User-Agent") userAgent: String
+    ): CurrentUserResponse
+
 }
+
+data class CurrentUserResponse(
+    val status: String?,
+    val message: String?
+)

@@ -17,6 +17,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import retrofit2.HttpException
 import java.io.File
 import javax.inject.Inject
 
@@ -103,9 +104,32 @@ class PostDownloader @Inject constructor(
                 downloadId.add(download(post.downloadLink, post.path, post.title))
             }
             return downloadId
-        } catch (e: Exception) {
-            e.printStackTrace()
+        }catch (e: HttpException) {
+            Log.e("API_ERROR", "HTTP error: ${e.code()} - ${e.message}")
+
+            val errorBody = e.response()?.errorBody()?.string()
+            Log.e("API_ERROR", "Error body: $errorBody")
             return mutableListOf()
+        } catch (e: Exception) {
+            Log.e("API_ERROR", "Exception: ${e.localizedMessage}")
+            return mutableListOf()
+        }
+    }
+
+    suspend fun isCookieValid(cookie: String): Boolean {
+        return try {
+            val res = instagramAPI.getCurrentUser(cookie, Constants.USER_AGENT)
+            println("cookieIsStillValid 1: $res")
+            // Valid session
+            if (res.status == "ok") return true
+
+            // Invalid or logged out
+            if (res.message == "login_required") return false
+
+            false
+        } catch (e: Exception) {
+            // Error also means cookie probably invalid
+            false
         }
     }
 

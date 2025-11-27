@@ -8,12 +8,14 @@ import com.ezt.video.instasaver.local.Carousel
 import com.ezt.video.instasaver.local.DPRecent
 import com.ezt.video.instasaver.local.Post
 import com.ezt.video.instasaver.local.PostDao
+import com.ezt.video.instasaver.local.ProfileRecent
 import com.ezt.video.instasaver.local.StoryRecent
 import com.ezt.video.instasaver.model.ReelTray
 import com.ezt.video.instasaver.model.SearchUser
 import com.ezt.video.instasaver.model.Story
 import com.ezt.video.instasaver.model.StoryHighlight
 import com.ezt.video.instasaver.model.User
+import com.ezt.video.instasaver.utils.Constants
 import javax.inject.Inject
 
 class InstagramRepository @Inject constructor(private val postDao: PostDao,private val postDownloader: PostDownloader, private val storyDownloader: StoryDownloader, private val profileDownloader: ProfileDownloader){
@@ -119,11 +121,18 @@ class InstagramRepository @Inject constructor(private val postDao: PostDao,priva
     }
 
     fun insertRecent(user: User){
+        postDownloader.download(user.profile_pic_url, Constants.AVATAR_FOLDER_NAME, user.username.plus(".jpg"))
         postDao.insertRecent(StoryRecent(user.pk,user.username,user.full_name,user.profile_pic_url,null))
     }
 
     fun insertDPRecent(user: User){
+        postDownloader.download(user.profile_pic_url, Constants.AVATAR_FOLDER_NAME, user.username.plus(".jpg"))
         postDao.insertDPRecent(DPRecent(user.pk,user.username,user.full_name,user.profile_pic_url))
+    }
+
+    fun insertProfileRecent(user: User){
+        postDownloader.download(user.profile_pic_url, Constants.AVATAR_FOLDER_NAME, user.username.plus(".jpg"))
+        postDao.insertProfileRecent(ProfileRecent(user.pk,user.username,user.full_name,user.profile_pic_url))
     }
 
     fun getRecentSearch(): List<StoryRecent>{
@@ -132,6 +141,10 @@ class InstagramRepository @Inject constructor(private val postDao: PostDao,priva
 
     fun getRecentDPSearch(): List<DPRecent>{
         return postDao.getRecentDPSearch()
+    }
+
+    fun getRecentProfileSearch() : List<ProfileRecent> {
+        return postDao.getRecentProfileSearch()
     }
 
     fun insertPost(post: Post){
@@ -143,7 +156,9 @@ class InstagramRepository @Inject constructor(private val postDao: PostDao,priva
     }
 
 
-
+    suspend fun getCurrentUser(cookie: String) : Boolean {
+        return postDownloader.isCookieValid(cookie)
+    }
 
 
 

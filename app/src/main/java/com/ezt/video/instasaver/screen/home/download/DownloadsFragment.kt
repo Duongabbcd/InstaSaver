@@ -127,23 +127,8 @@ class DownloadsFragment :
             downloadView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
                 override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                     super.onScrollStateChanged(recyclerView, newState)
-
-                    if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
-                        withSafeContext { ctx ->
-                            ctx.hideKeyBoard(searchView)
-                        }
-                    }
-
-                    if (newState == RecyclerView.SCROLL_STATE_SETTLING) {
-                        withSafeContext { ctx ->
-                            ctx.hideKeyBoard(searchView)
-                        }
-                    }
-
-                    if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                        withSafeContext { ctx ->
-                            ctx.hideKeyBoard(searchView)
-                        }
+                    withSafeContext { ctx ->
+                        ctx.hideKeyBoard(searchView)
                     }
                 }
 

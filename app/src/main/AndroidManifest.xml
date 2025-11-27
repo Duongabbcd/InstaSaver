@@ -54,6 +54,10 @@
             android:exported="true" />
 
         <activity
+            android:name=".screen.home.profile.ViewProfileActivity"
+            android:exported="true" />
+
+        <activity
             android:name="com.ezt.video.instasaver.screen.home.MainActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustPan">

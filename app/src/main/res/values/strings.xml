@@ -63,5 +63,7 @@
     <string name="video_option">Video</string>
     <string name="photo_option">Photo</string>
     <string name="collection_option">Carousel</string>
+    <string name="cookie_expired">Your Instagram cookie has been expired, please login to refresh it.</string>
+    <string name="user_profile">User Profile</string>
 
 </resources>

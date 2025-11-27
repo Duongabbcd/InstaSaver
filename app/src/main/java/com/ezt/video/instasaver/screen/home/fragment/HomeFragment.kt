@@ -24,11 +24,13 @@ import com.ezt.video.instasaver.viewmodel.HomeViewModel
 import kotlin.toString
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.ezt.video.instasaver.utils.Common.gone
 import com.ezt.video.instasaver.utils.Common.visible
 import com.ezt.video.instasaver.utils.Constants.AVATAR_FOLDER_NAME
 import com.ezt.video.instasaver.viewmodel.StoryViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import java.io.File
 import kotlin.collections.component1
 import kotlin.collections.component2
@@ -96,63 +98,107 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         }
 
         binding.storyButton.setOnClickListener {
-            if (cookies == null) {
-                startActivity(Intent(context, RequestLoginActivity::class.java))
-            } else {
-                Navigation.findNavController(it)
-                    .navigate(HomeFragmentDirections.actionHomeToStoryFragment(cookies ?: ""))
+            withSafeContext { ctx ->
+                cookieIsStillValid(cookies) { output ->
+                    if (cookies == null || !output) {
+                        if(!output) {
+                            Toast.makeText(ctx, resources.getString(R.string.cookie_expired), Toast.LENGTH_SHORT).show()
+                        }
+                        startActivity(Intent(context, RequestLoginActivity::class.java))
+                    } else {
+                        Navigation.findNavController(it)
+                            .navigate(HomeFragmentDirections.actionHomeToStoryFragment(cookies ?: ""))
+                    }
+                }
             }
+
         }
 
         binding.textView11.setOnClickListener {
-            if (cookies == null) {
-                startActivity(Intent(context, RequestLoginActivity::class.java))
-            } else {
-                Navigation.findNavController(it)
-                    .navigate(HomeFragmentDirections.actionHomeToStoryFragment(cookies ?: ""))
+            withSafeContext { ctx ->
+                cookieIsStillValid(cookies) { output ->
+                    if (cookies == null || !output) {
+                        if(!output) {
+                            Toast.makeText(ctx, resources.getString(R.string.cookie_expired), Toast.LENGTH_SHORT).show()
+                        }
+                        startActivity(Intent(context, RequestLoginActivity::class.java))
+                    } else {
+                        Navigation.findNavController(it)
+                            .navigate(HomeFragmentDirections.actionHomeToStoryFragment(cookies ?: ""))
+                    }
+                }
             }
+
         }
 
         binding.dpButton.setOnClickListener {
-            if (cookies == null) {
-                startActivity(Intent(context, RequestLoginActivity::class.java))
-            } else {
-                Navigation.findNavController(it)
-                    .navigate(HomeFragmentDirections.actionHomeToDPViewerFragment(cookies ?: ""))
+            withSafeContext { ctx ->
+                cookieIsStillValid(cookies) { output ->
+                    if (cookies == null || !output) {
+                        if(!output) {
+                            Toast.makeText(ctx, resources.getString(R.string.cookie_expired), Toast.LENGTH_SHORT).show()
+                        }
+                        startActivity(Intent(context, RequestLoginActivity::class.java))
+                    } else {
+                        Navigation.findNavController(it)
+                            .navigate(HomeFragmentDirections.actionHomeToDPViewerFragment(cookies ?: ""))
+                    }
+                }
             }
 
         }
 
          binding.textView12.setOnClickListener {
-            if (cookies == null) {
-                startActivity(Intent(context, RequestLoginActivity::class.java))
-            } else {
-                Navigation.findNavController(it)
-                    .navigate(HomeFragmentDirections.actionHomeToDPViewerFragment(cookies ?: ""))
-            }
-
+             withSafeContext { ctx ->
+                 cookieIsStillValid(cookies) { output ->
+                     if (cookies == null || !output) {
+                         if(!output) {
+                             Toast.makeText(ctx, resources.getString(R.string.cookie_expired), Toast.LENGTH_SHORT).show()
+                         }
+                         startActivity(Intent(context, RequestLoginActivity::class.java))
+                     } else {
+                         Navigation.findNavController(it)
+                             .navigate(HomeFragmentDirections.actionHomeToDPViewerFragment(cookies ?: ""))
+                     }
+                 }
+             }
         }
 
         binding.profileButton.setOnClickListener  {
-            if (cookies == null) {
-                startActivity(Intent(context, RequestLoginActivity::class.java))
-            } else {
-                Navigation.findNavController(it)
-                    .navigate(HomeFragmentDirections.actionHomeToProfileFragment(cookies ?: ""))
+            withSafeContext { ctx ->
+                cookieIsStillValid(cookies) { output ->
+                    if (cookies == null || !output) {
+                        if(!output) {
+                            Toast.makeText(ctx, resources.getString(R.string.cookie_expired), Toast.LENGTH_SHORT).show()
+                        }
+                        startActivity(Intent(context, RequestLoginActivity::class.java))
+                    } else {
+                        Navigation.findNavController(it)
+                            .navigate(HomeFragmentDirections.actionHomeToProfileFragment(cookies ?: ""))
+                    }
+                }
             }
         }
 
         binding.textView13.setOnClickListener  {
-                if (cookies == null) {
-                    startActivity(Intent(context, RequestLoginActivity::class.java))
-                } else {
-                    Navigation.findNavController(it)
-                        .navigate(HomeFragmentDirections.actionHomeToProfileFragment(cookies ?: ""))
+            withSafeContext { ctx ->
+                cookieIsStillValid(cookies) { output ->
+                    if (cookies == null || !output) {
+                        if(!output) {
+                            Toast.makeText(ctx, resources.getString(R.string.cookie_expired), Toast.LENGTH_SHORT).show()
+                        }
+                        startActivity(Intent(context, RequestLoginActivity::class.java))
+                    } else {
+                        Navigation.findNavController(it)
+                            .navigate(HomeFragmentDirections.actionHomeToProfileFragment(cookies ?: ""))
+                    }
                 }
+            }
         }
 
 
         binding.downloadButton.setOnClickListener {
+            checkDuplicateAvatars()
             withSafeContext { ctx ->
                 loadingDialog = Dialog(ctx)
                 loadingDialog.setContentView(R.layout.download_loading_dialog)
@@ -236,33 +282,50 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
 
     private fun download(link: String) {
         binding.progressBar.visibility = View.VISIBLE
-        if (cookies == null) {
-            startActivity(Intent(context, RequestLoginActivity::class.java))
-        } else {
-            if (link.contains("stories")) {
-                val searchUser = getStoryUsername(link) ?: ""
-                cookies?.let { cookie ->
-                    storyViewModel.searchUser(searchUser, cookie)
-                    storyViewModel.searchResult.observe(viewLifecycleOwner) {
-                        val result = it.first()
-                        storyViewModel.fetchStory(result.user.pk, cookie)
-                    }
-                    storyViewModel.stories.observe(viewLifecycleOwner) {
-                        it.onEach { url ->
-                            storyViewModel.downloadStory(url)
+
+        cookieIsStillValid(cookies, { output ->
+            if (cookies == null || !output ) {
+                if(!output) {
+                    Toast.makeText(requireContext(), resources.getString(R.string.cookie_expired), Toast.LENGTH_SHORT).show()
+                }
+                startActivity(Intent(context, RequestLoginActivity::class.java))
+            } else {
+                if (link.contains("stories")) {
+                    val searchUser = getStoryUsername(link) ?: ""
+                    cookies?.let { cookie ->
+                        storyViewModel.searchUser(searchUser, cookie)
+                        storyViewModel.searchResult.observe(viewLifecycleOwner) {
+                            val result = it.first()
+                            storyViewModel.fetchStory(result.user.pk, cookie)
+                        }
+                        storyViewModel.stories.observe(viewLifecycleOwner) {
+                            it.onEach { url ->
+                                storyViewModel.downloadStory(url)
+                            }
                         }
                     }
+
+                } else {
+                    viewModel.downloadPost(link, cookies!!)
                 }
 
-            } else {
-                viewModel.downloadPost(link, cookies!!)
             }
 
-        }
+            binding.editText.text.clear()
+            binding.progressBar.visibility = View.GONE
+            load = true
+        })
 
-        binding.editText.text.clear()
-        binding.progressBar.visibility = View.GONE
-        load = true
+    }
+
+    private fun cookieIsStillValid(cookie: String?, onValid: (Boolean) -> Unit) {
+
+        cookie?.let {
+            lifecycleScope.launch {
+               val x: Boolean =  viewModel.isCurrentUserCookieValid(cookie)
+                onValid(x)
+            }
+        }
     }
 
     private fun isInstagramLink(link: String): Boolean {

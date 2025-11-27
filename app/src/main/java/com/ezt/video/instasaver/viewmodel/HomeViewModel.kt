@@ -62,4 +62,8 @@ class HomeViewModel @Inject constructor(private val instagramRepository: Instagr
         }
     }
 
+    suspend fun isCurrentUserCookieValid(cookie: String)  : Boolean{
+        return instagramRepository.getCurrentUser(cookie)
+    }
+
 }

@@ -29,6 +29,7 @@ class InstagramLoginActivity : BaseActivity<ActivityInstagramLoginBinding>(Activ
         myWebView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView, url: String) {
                 super.onPageFinished(myWebView, url)
+                println("setUpWebViewAndButton: $url")
                 if(url==Constants.INSTAGRAM_SAVE_LOGIN_LINK || url== Constants.INSTAGRAM_HOMEPAGE_LINK){
                     saveCookies()
                     Toast.makeText(this@InstagramLoginActivity, "Logged in successfully!", Toast.LENGTH_SHORT).show()

@@ -1,0 +1,50 @@
+package com.ezt.video.instasaver.screen.home.story.adapter
+
+import android.content.Context
+import android.content.Intent
+import android.view.LayoutInflater
+import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
+import com.ezt.video.instasaver.databinding.ItemStorySearchViewBinding
+import com.ezt.video.instasaver.local.ProfileRecent
+import com.ezt.video.instasaver.local.StoryRecent
+import com.ezt.video.instasaver.screen.download.DownloadStoryActivity
+import com.squareup.picasso.Picasso
+
+class RecentProfileAdapter(private val dataHolder: List<ProfileRecent>, private val cookies: String) :
+    RecyclerView.Adapter<RecentProfileAdapter.RecentProfileViewHolder>() {
+    private lateinit var context: Context
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int
+    ): RecentProfileViewHolder {
+        context = parent.context
+        val binding =
+            ItemStorySearchViewBinding.inflate(LayoutInflater.from(context), parent, false)
+        return RecentProfileViewHolder(binding)
+    }
+
+    override fun onBindViewHolder(
+        holder: RecentProfileViewHolder,
+        position: Int
+    ) {
+        holder.bind(position)
+    }
+
+    override fun getItemCount(): Int = dataHolder.size
+
+    inner class RecentProfileViewHolder(private val binding: ItemStorySearchViewBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(position: Int) {
+            val profileRecent = dataHolder[position]
+            binding.apply {
+                Picasso.get().load(profileRecent.profile_pic_url).into(profilePicView)
+                usernameView.text = profileRecent.username
+                fullNameView.text = profileRecent.full_name
+                root.setOnClickListener {
+                    println("RecentProfileViewHolder: ${profileRecent.username}")
+                }
+            }
+        }
+    }
+}

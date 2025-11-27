@@ -5,12 +5,15 @@ import android.app.DownloadManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ezt.video.instasaver.base.BaseActivity
@@ -61,8 +64,6 @@ class DownloadStoryActivity :
 
             }
         }
-
-//        registerReceiver(onComplete, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
 
     }
 
@@ -146,6 +147,23 @@ class DownloadStoryActivity :
         adapter.notifyDataSetChanged()
         selecting=true
         binding.downloadButton.visibility=View.VISIBLE
+    }
+
+    override fun onStart() {
+        super.onStart()
+        val intentFilter = IntentFilter()
+        intentFilter.addAction(DownloadManager.ACTION_DOWNLOAD_COMPLETE)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(onComplete, intentFilter, RECEIVER_EXPORTED)
+        } else {
+            ContextCompat.registerReceiver(
+                this@DownloadStoryActivity,
+                onComplete,
+                intentFilter,
+                ContextCompat.RECEIVER_EXPORTED
+            )
+
+        }
     }
 
     override fun onDestroy() {

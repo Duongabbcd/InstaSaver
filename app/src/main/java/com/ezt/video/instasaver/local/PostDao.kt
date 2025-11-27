@@ -72,9 +72,15 @@ interface PostDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertDPRecent(dpRecent: DPRecent)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    fun insertProfileRecent(profileRecent: ProfileRecent)
+
     @Query("SELECT * FROM RECENT_TABLE ORDER BY ID DESC LIMIT 10")
     fun getRecentSearch(): List<StoryRecent>
 
     @Query("SELECT * FROM DP_RECENT_TABLE ORDER BY ID DESC LIMIT 10")
     fun getRecentDPSearch(): List<DPRecent>
+
+    @Query("SELECT * FROM PROFILE_RECENT_TABLE ORDER BY ID DESC LIMIT 10")
+    fun getRecentProfileSearch(): List<ProfileRecent>
 }
