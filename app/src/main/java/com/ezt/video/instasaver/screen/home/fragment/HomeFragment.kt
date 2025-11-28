@@ -167,6 +167,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         binding.profileButton.setOnClickListener  {
             withSafeContext { ctx ->
                 cookieIsStillValid(cookies) { output ->
+                    println("cookieIsStillValid 0: $output")
                     if (cookies == null || !output) {
                         if(!output) {
                             Toast.makeText(ctx, resources.getString(R.string.cookie_expired), Toast.LENGTH_SHORT).show()
@@ -200,15 +201,14 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         binding.downloadButton.setOnClickListener {
             checkDuplicateAvatars()
             withSafeContext { ctx ->
-                loadingDialog = Dialog(ctx)
-                loadingDialog.setContentView(R.layout.download_loading_dialog)
-                loadingDialog.setCancelable(false)
-                loadingDialog.show()
-
-                Toast.makeText(ctx, resources.getString(R.string.please_wait), Toast.LENGTH_SHORT)
-                    .show()
                 val postLink = binding.editText.text.toString()
                 if (isInstagramLink(postLink)) {
+                    Toast.makeText(ctx, resources.getString(R.string.please_wait), Toast.LENGTH_SHORT)
+                        .show()
+                    loadingDialog = Dialog(ctx)
+                    loadingDialog.setContentView(R.layout.download_loading_dialog)
+                    loadingDialog.setCancelable(false)
+                    loadingDialog.show()
                     download(postLink)
                     hideKeyBoard(binding.downloadButton)
                 } else {
@@ -384,9 +384,12 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
     }
 
     private fun observeData(context: Context?) {
+        binding.loading.visible()
         viewModel.allPosts.observe(viewLifecycleOwner) {
             load = false
             binding.downloadView.adapter = DownloadViewAdapter(load, it.take(5))
+
+            binding.loading.gone()
             size = it.size
         }
 

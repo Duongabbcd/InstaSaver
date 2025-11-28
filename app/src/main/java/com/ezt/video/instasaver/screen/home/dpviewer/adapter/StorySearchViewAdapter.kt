@@ -57,6 +57,9 @@ class StorySearchViewAdapter(
                 if (profilePicture.exists()) {
                     Glide.with(context).load(Uri.fromFile(profilePicture))
                         .into(binding.profilePicView)
+                } else {
+                    Glide.with(context).load(user.profile_pic_url)
+                        .into(binding.profilePicView)
                 }
 
                 usernameView.text=user.username

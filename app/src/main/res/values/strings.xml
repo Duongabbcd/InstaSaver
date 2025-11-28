@@ -65,5 +65,10 @@
     <string name="collection_option">Carousel</string>
     <string name="cookie_expired">Your Instagram cookie has been expired, please login to refresh it.</string>
     <string name="user_profile">User Profile</string>
+    <string name="all_posts">All Posts</string>
+    <string name="full_name">Full Name</string>
+    <string name="post_count">posts</string>
+    <string name="follower_count">followers</string>
+    <string name="following_count">following</string>
 
 </resources>

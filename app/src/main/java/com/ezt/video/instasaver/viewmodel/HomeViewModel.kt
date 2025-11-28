@@ -6,11 +6,15 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ezt.video.instasaver.local.Carousel
+import com.ezt.video.instasaver.model.Items
+import com.ezt.video.instasaver.model.MediaItem
 import com.ezt.video.instasaver.remote.repository.InstagramRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import retrofit2.HttpException
+import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -19,6 +23,11 @@ class HomeViewModel @Inject constructor(private val instagramRepository: Instagr
     val postExits= MutableLiveData<Boolean>()
     var downloadID= MutableLiveData<MutableList<Long>>()
     var downloadId= MutableLiveData<Long>()
+
+    var allUserPosts = MutableLiveData<MutableList<Items>>()
+
+    private val _stats = MutableLiveData<Triple<Int, Int, Int>>()
+    val stats: LiveData<Triple<Int, Int, Int>> = _stats
 
     private suspend fun doesPostExits(url: String):Boolean= withContext(Dispatchers.IO){
         instagramRepository.doesPostExits(url)
@@ -65,5 +74,31 @@ class HomeViewModel @Inject constructor(private val instagramRepository: Instagr
     suspend fun isCurrentUserCookieValid(cookie: String)  : Boolean{
         return instagramRepository.getCurrentUser(cookie)
     }
+
+
+    suspend fun getAllPosts(userId: Long, cookie: String)  {
+        val result = instagramRepository.getAllPosts(userId, cookie)
+        allUserPosts.postValue(result.toMutableList())
+    }
+
+    fun loadUserStats(pk: Long) {
+        viewModelScope.launch {
+            try {
+                val result = instagramRepository.getUserStats(pk)
+                _stats.value = result
+
+            } catch (e: HttpException) {
+               println("Server error (${e.code()})")
+
+            } catch (e: IOException) {
+                println("Network error")
+
+            } catch (e: Exception) {
+                println("Unexpected error: ${e.message}")
+            }
+        }
+    }
+
+
 
 }

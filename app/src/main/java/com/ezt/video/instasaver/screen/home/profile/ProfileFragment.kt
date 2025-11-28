@@ -111,6 +111,7 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(FragmentProfileBind
                 println("searchResult: $it")
             }
             adapter = StorySearchViewAdapter(searchResult) { user ->
+                println("StorySearchViewAdapter: $user")
                 val intent = Intent(context, ViewProfileActivity::class.java)
                 intent.putExtra("username", user.username)
                 intent.putExtra("fullName", user.full_name)

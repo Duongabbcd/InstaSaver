@@ -6,11 +6,13 @@ import android.database.Cursor
 import android.net.Uri
 import android.os.Environment
 import android.util.Log
+import android.widget.Toast
 import com.ezt.video.instasaver.local.Carousel
 import com.ezt.video.instasaver.local.Post
 import com.ezt.video.instasaver.local.PostDao
 import com.ezt.video.instasaver.model.Items
 import com.ezt.video.instasaver.model.ShortCodeMedia
+import com.ezt.video.instasaver.R
 import com.ezt.video.instasaver.remote.network.InstagramAPI
 import com.ezt.video.instasaver.utils.Constants
 import kotlinx.coroutines.CoroutineScope
@@ -109,9 +111,12 @@ class PostDownloader @Inject constructor(
 
             val errorBody = e.response()?.errorBody()?.string()
             Log.e("API_ERROR", "Error body: $errorBody")
+            Toast.makeText(context, context.resources.getString(R.string.cookie_expired), Toast.LENGTH_SHORT).show()
             return mutableListOf()
         } catch (e: Exception) {
             Log.e("API_ERROR", "Exception: ${e.localizedMessage}")
+            Toast.makeText(context, e.localizedMessage, Toast.LENGTH_SHORT).show()
+
             return mutableListOf()
         }
     }
@@ -209,6 +214,29 @@ class PostDownloader @Inject constructor(
         return (context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(request)
     }
 
+    suspend fun getUserStatsByPk(pk: Long): Triple<Int, Int, Int> {
+        try {
+            val response = instagramAPI.getUserInfo(pk).user
+
+            val posts = response.media_count
+            val followers = response.follower_count
+            val following = response.following_count
+
+            return Triple(posts, followers, following)
+        }
+
+        catch (e: HttpException) {
+            Log.e("API_ERROR", "HTTP error: ${e.code()} - ${e.message}")
+
+            Toast.makeText(context, context.resources.getString(R.string.cookie_expired), Toast.LENGTH_SHORT).show()
+            return Triple(0,0,0)
+        } catch (e: Exception) {
+            Log.e("API_ERROR", "Exception: ${e.localizedMessage}")
+            Toast.makeText(context, e.localizedMessage, Toast.LENGTH_SHORT).show()
+
+            return Triple(0,0,0)
+        }
+    }
 
 
     private fun getPostCode(link: String): String {

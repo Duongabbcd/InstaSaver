@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="@dimen/_86sdp"
+    android:layout_margin="@dimen/_5sdp"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/imageView"
+        android:src="@drawable/lisa"
+        app:shapeAppearanceOverlay="@style/circularImageView_25dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:scaleType="centerCrop"
+        android:contentDescription="@string/imageView"/>
+
+    <ImageView
+        android:id="@+id/mediaTypeIconView"
+        android:src="@drawable/ic_copy"
+        android:layout_margin="@dimen/_4sdp"
+        android:padding="@dimen/_4sdp"
+        android:contentDescription="@string/imageView"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_width="@dimen/_24sdp"
+        android:layout_height="@dimen/_24sdp" />
+
+    <ImageView
+        android:id="@+id/selectPost"
+        android:src="@drawable/icon_unselected"
+        android:layout_margin="@dimen/_4sdp"
+        android:padding="@dimen/_3sdp"
+        android:contentDescription="@string/imageView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_width="@dimen/_24sdp"
+        android:layout_height="@dimen/_24sdp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

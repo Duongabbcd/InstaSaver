@@ -37,13 +37,13 @@ class RecentProfileAdapter(private val dataHolder: List<ProfileRecent>, private 
     inner class RecentProfileViewHolder(private val binding: ItemStorySearchViewBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(position: Int) {
-            val profileRecent = dataHolder[position]
+            val profileRecent: ProfileRecent = dataHolder[position]
             binding.apply {
                 Picasso.get().load(profileRecent.profile_pic_url).into(profilePicView)
                 usernameView.text = profileRecent.username
                 fullNameView.text = profileRecent.full_name
                 root.setOnClickListener {
-                    println("RecentProfileViewHolder: ${profileRecent.username}")
+                    println("RecentProfileViewHolder: $profileRecent")
                     val intent = Intent(context, ViewProfileActivity::class.java)
                     intent.putExtra("username", profileRecent.username)
                     intent.putExtra("fullName", profileRecent.full_name)

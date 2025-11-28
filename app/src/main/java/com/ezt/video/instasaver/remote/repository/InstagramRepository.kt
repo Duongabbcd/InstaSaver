@@ -10,6 +10,8 @@ import com.ezt.video.instasaver.local.Post
 import com.ezt.video.instasaver.local.PostDao
 import com.ezt.video.instasaver.local.ProfileRecent
 import com.ezt.video.instasaver.local.StoryRecent
+import com.ezt.video.instasaver.model.Items
+import com.ezt.video.instasaver.model.MediaItem
 import com.ezt.video.instasaver.model.ReelTray
 import com.ezt.video.instasaver.model.SearchUser
 import com.ezt.video.instasaver.model.Story
@@ -160,6 +162,16 @@ class InstagramRepository @Inject constructor(private val postDao: PostDao,priva
         return postDownloader.isCookieValid(cookie)
     }
 
+    suspend fun getAllPosts(userId: Long,cookies: String) : List<Items> {
+        return profileDownloader.getAllPosts(userId, cookies)
+    }
 
+    suspend fun getUserStats(pk: Long): Triple<Int, Int, Int> {
+        val posts = postDownloader.getUserStatsByPk(pk).first
+        val followers = postDownloader.getUserStatsByPk(pk).second
+        val following =postDownloader.getUserStatsByPk(pk).third
+
+        return Triple(posts, followers, following)
+    }
 
 }

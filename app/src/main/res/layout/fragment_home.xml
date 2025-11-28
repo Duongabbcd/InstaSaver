@@ -245,6 +245,16 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textView" />
 
+        <ProgressBar
+            android:id="@+id/loading"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="@id/dpButton"
+            app:layout_constraintEnd_toEndOf="@id/dpButton"
+            app:layout_constraintTop_toTopOf="@id/downloadView"
+            app:layout_constraintBottom_toBottomOf="@id/downloadView"
+            android:layout_width="@dimen/_24sdp"
+            android:layout_height="@dimen/_24sdp" />
+
         <TextView
             android:id="@+id/noDownloadsTextView"
             style="@style/CustomTextStyleMedium16sp"
@@ -256,6 +266,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textView" />
+
+
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

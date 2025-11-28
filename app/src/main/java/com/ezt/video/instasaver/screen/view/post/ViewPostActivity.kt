@@ -72,7 +72,7 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
         val name: String = post?.getString("name") ?: "lol"
         val mediaType = post?.getInt("media_type", 1)
         val caption = post?.getString("caption") ?: ""
-        val username = post?.getString("username")
+        val username = post?.getString("username") ?: ""
         val profilePicture = File(Constants.AVATAR_FOLDER_NAME, username.plus(".jpg"))
         println("DownloadViewHolder file path 1 $username $profilePicture")
 

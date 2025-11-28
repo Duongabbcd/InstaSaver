@@ -11,12 +11,118 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="DP Viewer"
+        android:layout_marginStart="@dimen/_10sdp"
         android:textColor="@color/black"
         style="@style/CustomTextStyleMedium18sp"
         app:layout_constraintBottom_toBottomOf="@+id/backButton"
         app:layout_constraintStart_toEndOf="@+id/backButton"
         app:layout_constraintTop_toTopOf="@+id/backButton" />
 
+    <TextView
+        android:id="@+id/instaFullName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/full_name"
+        android:textColor="@color/black"
+        style="@style/CustomTextStyleMedium14sp"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:layout_marginStart="@dimen/_10sdp"
+        app:layout_constraintBottom_toBottomOf="@+id/backButton"
+        app:layout_constraintStart_toEndOf="@+id/backButton"
+        app:layout_constraintTop_toBottomOf="@+id/instaAce" />
+
+    <LinearLayout
+        android:id="@+id/statistic"
+        android:visibility="gone"
+        android:orientation="horizontal"
+        android:layout_width="0dp"
+        android:layout_marginTop="@dimen/_10sdp"
+        app:layout_constraintTop_toBottomOf="@id/instaFullName"
+        app:layout_constraintStart_toStartOf="@id/instaFullName"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_height="wrap_content" >
+
+        <LinearLayout
+            android:id="@+id/posts"
+            android:gravity="start"
+            android:orientation="vertical"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:id="@+id/postCount"
+                android:text="0"
+                style="@style/CustomTextStyleSemiBold18sp"
+                android:textSize="22sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:text="@string/post_count"
+                style="@style/CustomTextStyle14sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:id="@+id/followers"
+            android:gravity="start"
+            android:orientation="vertical"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_marginHorizontal="@dimen/_10sdp"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:id="@+id/followerCount"
+                android:text="0"
+                style="@style/CustomTextStyleSemiBold18sp"
+                android:textSize="22sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:text="@string/follower_count"
+                style="@style/CustomTextStyle14sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:id="@+id/followings"
+            android:gravity="start"
+            android:orientation="vertical"
+            android:layout_weight="1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content" >
+
+            <TextView
+                android:id="@+id/followingCount"
+                android:text="0"
+                style="@style/CustomTextStyleSemiBold18sp"
+                android:textSize="22sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:text="@string/following_count"
+                style="@style/CustomTextStyle14sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/allPosts"
+        android:gravity="center"
+        android:text="@string/all_posts"
+        style="@style/CustomTextStyleMedium16sp"
+        android:layout_marginTop="@dimen/_16sdp"
+        android:layout_marginHorizontal="@dimen/_10sdp"
+        app:layout_constraintTop_toBottomOf="@id/statistic"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
     <ImageButton
         android:id="@+id/backButton"
@@ -32,17 +138,37 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/storyHighlightView"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingStart="@dimen/_16sdp"
-        android:layout_marginTop="@dimen/_10sdp"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/backButton"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:paddingHorizontal="@dimen/_5sdp"
+        android:layout_marginVertical="@dimen/_10sdp"
+        app:layout_constraintTop_toBottomOf="@+id/allPosts"
+        app:layout_constraintBottom_toTopOf="@+id/selectAll"
         tools:listitem="@layout/item_reel_ray" />
 
+    <ProgressBar
+        android:id="@+id/loading"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="@id/storyHighlightView"
+        app:layout_constraintBottom_toBottomOf="@id/storyHighlightView"
+        app:layout_constraintStart_toStartOf="@id/storyHighlightView"
+        app:layout_constraintEnd_toEndOf="@id/storyHighlightView"
+        android:layout_width="@dimen/_40sdp"
+        android:layout_height="@dimen/_40sdp" />
 
+    <TextView
+        android:id="@+id/selectAll"
+        android:text="Select all"
+        android:gravity="center"
+        style="@style/CustomTextStyleMedium14sp"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/teal_700"
+        android:layout_marginHorizontal="@dimen/_10sdp"
+        android:layout_marginBottom="@dimen/_10sdp"
+        android:padding="@dimen/_8sdp"
+        android:background="@drawable/background_button_radius_12"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
