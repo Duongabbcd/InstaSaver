@@ -137,28 +137,27 @@
         tools:ignore="ContentDescription" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/storyHighlightView"
+        android:id="@+id/userAllPosts"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:paddingHorizontal="@dimen/_5sdp"
+        android:paddingHorizontal="@dimen/_6sdp"
         android:layout_marginVertical="@dimen/_10sdp"
         app:layout_constraintTop_toBottomOf="@+id/allPosts"
         app:layout_constraintBottom_toTopOf="@+id/selectAll"
-        tools:listitem="@layout/item_reel_ray" />
+        tools:listitem="@layout/item_user_post" />
 
     <ProgressBar
         android:id="@+id/loading"
         android:visibility="gone"
-        app:layout_constraintTop_toTopOf="@id/storyHighlightView"
-        app:layout_constraintBottom_toBottomOf="@id/storyHighlightView"
-        app:layout_constraintStart_toStartOf="@id/storyHighlightView"
-        app:layout_constraintEnd_toEndOf="@id/storyHighlightView"
+        app:layout_constraintBottom_toBottomOf="@id/userAllPosts"
+        app:layout_constraintStart_toStartOf="@id/userAllPosts"
+        app:layout_constraintEnd_toEndOf="@id/userAllPosts"
         android:layout_width="@dimen/_40sdp"
         android:layout_height="@dimen/_40sdp" />
 
     <TextView
         android:id="@+id/selectAll"
-        android:text="Select all"
+        android:text="@string/select_all"
         android:gravity="center"
         style="@style/CustomTextStyleMedium14sp"
         android:textColor="@color/white"

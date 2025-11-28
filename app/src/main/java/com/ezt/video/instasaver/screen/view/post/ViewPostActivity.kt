@@ -52,6 +52,7 @@ import com.squareup.picasso.Picasso
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
 import java.util.regex.Pattern
+import androidx.core.net.toUri
 
 @AndroidEntryPoint
 class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostBinding::inflate) {
@@ -65,19 +66,26 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
     private var notDeleted = true
     private var isPost: Boolean = false
 
+    private val post by lazy {
+        intent.extras
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         HomeFragment.load = false
-        val post: Bundle? = intent.extras
         val name: String = post?.getString("name") ?: "lol"
         val mediaType = post?.getInt("media_type", 1)
         val caption = post?.getString("caption") ?: ""
         val username = post?.getString("username") ?: ""
+        val defaultProfilePic = post?.getString("profilePicture")
         val profilePicture = File(Constants.AVATAR_FOLDER_NAME, username.plus(".jpg"))
         println("DownloadViewHolder file path 1 $username $profilePicture")
 
         if (profilePicture.exists()) {
             Glide.with(this@ViewPostActivity).load(Uri.fromFile(profilePicture))
+                .into(binding.profilePicView)
+        } else {
+            Glide.with(this@ViewPostActivity).load(defaultProfilePic)
                 .into(binding.profilePicView)
         }
 
@@ -265,7 +273,7 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
 //                .setMessage("The photo may have been deleted, renamed, or moved.")
 //                .setNegativeButton("Close") { d, _ -> d.dismiss() }
 //                .show()
-            null
+            post?.getString("imageUrl")?.toUri()
         }
     }
 
@@ -286,7 +294,7 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
 //                .setMessage("The video may have been deleted, renamed, or moved.")
 //                .setNegativeButton("Close") { d, _ -> d.dismiss() }
 //                .show()
-            null
+            post?.getString("videoUrl")?.toUri()
         }
     }
 

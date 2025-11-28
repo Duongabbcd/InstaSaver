@@ -44,11 +44,11 @@ interface InstagramAPI {
     @GET("feed/user/{userId}/")
     suspend fun getUserPosts(
         @Path("userId") userId: Long,
-        @Query("count") count: Int = 18,
+        @Query("count") count: Int = 30,  // <-- increase
         @Query("max_id") maxId: String? = null,
         @Header("Cookie") cookie: String,
         @Header("User-Agent") userAgent: String
-    ): retrofit2.Response<UserFeedResponse>
+    ): UserFeedResponse
 
     @GET("accounts/current_user/")
     suspend fun getCurrentUser(

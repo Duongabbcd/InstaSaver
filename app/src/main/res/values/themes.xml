@@ -20,7 +20,7 @@
     </style>
 
     <style name="circularImageView_25dp" parent="">
-        <item name="cornerSize">25%</item>
+        <item name="cornerSize">8%</item>
     </style>
 
 

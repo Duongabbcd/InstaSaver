@@ -24,6 +24,11 @@ class InstagramRepository @Inject constructor(private val postDao: PostDao,priva
     val getAllPost = postDao.getAllPosts()
     val getRecentDownload = postDao.getRecentDownloads()
 
+    private var isLoading = false
+    private var nextMaxId: String? = null
+
+    private var isLastPage = false
+
     suspend fun fetchPostByUser(
         userName: String,
     ) : List<Post> {
@@ -162,10 +167,33 @@ class InstagramRepository @Inject constructor(private val postDao: PostDao,priva
         return postDownloader.isCookieValid(cookie)
     }
 
-    suspend fun getAllPosts(userId: Long,cookies: String) : List<Items> {
-        return profileDownloader.getAllPosts(userId, cookies)
+    suspend fun getAllPosts(userId: Long, cookies: String): List<Items> {
+        if (isLoading || isLastPage) return emptyList()
+        isLoading = true
+
+        return try {
+            val response = profileDownloader.getAllPosts(userId, cookies, nextMaxId)
+            nextMaxId = response?.next_max_id
+
+            if (response?.next_max_id == null) {
+                isLastPage = true
+            }
+
+            response?.items ?: listOf()
+        } finally {
+            isLoading = false
+        }
     }
 
+
+    fun resetPagination() {
+        nextMaxId = null
+    }
+
+    fun hasMorePosts(): Boolean {
+        println("hasMorePosts: $isLastPage")
+        return !isLastPage
+    }
     suspend fun getUserStats(pk: Long): Triple<Int, Int, Int> {
         val posts = postDownloader.getUserStatsByPk(pk).first
         val followers = postDownloader.getUserStatsByPk(pk).second

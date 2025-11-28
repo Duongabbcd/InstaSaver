@@ -70,5 +70,6 @@
     <string name="post_count">posts</string>
     <string name="follower_count">followers</string>
     <string name="following_count">following</string>
+    <string name="select_all">Select</string>
 
 </resources>

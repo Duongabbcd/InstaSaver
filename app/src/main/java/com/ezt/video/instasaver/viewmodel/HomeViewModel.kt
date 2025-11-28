@@ -24,7 +24,8 @@ class HomeViewModel @Inject constructor(private val instagramRepository: Instagr
     var downloadID= MutableLiveData<MutableList<Long>>()
     var downloadId= MutableLiveData<Long>()
 
-    var allUserPosts = MutableLiveData<MutableList<Items>>()
+    val allUserPosts = MutableLiveData<MutableList<Items>>(mutableListOf())
+    val isLoading = MutableLiveData(false)
 
     private val _stats = MutableLiveData<Triple<Int, Int, Int>>()
     val stats: LiveData<Triple<Int, Int, Int>> = _stats
@@ -76,9 +77,25 @@ class HomeViewModel @Inject constructor(private val instagramRepository: Instagr
     }
 
 
-    suspend fun getAllPosts(userId: Long, cookie: String)  {
-        val result = instagramRepository.getAllPosts(userId, cookie)
-        allUserPosts.postValue(result.toMutableList())
+    fun loadMorePosts(userId: Long, cookies: String) {
+        if (!instagramRepository.hasMorePosts()) return
+        isLoading.value = true
+        viewModelScope.launch {
+            val response = instagramRepository.getAllPosts(userId, cookies)
+            response.let { newItems ->
+                val current = allUserPosts.value ?: mutableListOf()
+                current.addAll(newItems)
+                allUserPosts.postValue(current)
+                isLoading.postValue(false)
+            }
+        }
+    }
+
+
+    fun refresh(userId: Long, cookies: String) {
+        instagramRepository.resetPagination()
+        allUserPosts.value = mutableListOf()
+        loadMorePosts(userId, cookies)
     }
 
     fun loadUserStats(pk: Long) {
