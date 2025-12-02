@@ -37,6 +37,7 @@ import java.io.File
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.iterator
+import androidx.navigation.findNavController
 
 @AndroidEntryPoint
 class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::inflate) {
@@ -176,7 +177,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
                         }
                         startActivity(Intent(context, RequestLoginActivity::class.java))
                     } else {
-                        Navigation.findNavController(it)
+                        it.findNavController()
                             .navigate(HomeFragmentDirections.actionHomeToProfileFragment(cookies ?: ""))
                     }
                 }
@@ -317,7 +318,23 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
                     }
 
                 } else {
-                    viewModel.downloadPost(link, cookies!!)
+                    viewModel.downloadPost(link, cookies!!, null) { output ->
+                        if (output) {
+                            Toast.makeText(
+                                requireContext(),
+                                resources.getString(R.string.file_already_exist),
+                                Toast.LENGTH_SHORT
+                            ).show()
+
+                        } else {
+                            Toast.makeText(
+                                requireContext(),
+                                resources.getString(R.string.file_downloaded_successfully),
+                                Toast.LENGTH_SHORT
+                            ).show()
+
+                        }
+                    }
                 }
 
             }

@@ -29,10 +29,20 @@ class PostDownloader @Inject constructor(
     private val postDao: PostDao
 ) {
 
-    suspend fun fetchDownloadLink(url: String, map: String): MutableList<Long> {
+    suspend fun fetchDownloadLink(
+        url: String,
+        map: String,
+        inputItem: Items? = null
+    ): MutableList<Long> {
+        println("fetchDownloadLink 0: $inputItem")
+
         try {
-            val postID = getPostCode(url)
-            val items: Items = if (postID.length > 23) {
+            var postID = ""
+            if (url.isNotEmpty()) {
+                postID = getPostCode(url)
+            }
+
+            val items: Items = inputItem ?: if (postID.length > 23) {
                 instagramAPI.getData(
                     Constants.PRIVATE_POST_URL.format(postID),
                     map,
@@ -44,7 +54,7 @@ class PostDownloader @Inject constructor(
                 Log.d("tagg", logd)
                 instagramAPI.getData(mediaId, map, Constants.USER_AGENT).items[0]
             }
-            println("fetchDownloadLink: $postID and $items")
+            println("fetchDownloadLink 1: $items")
 
             val post: Post
             val downloadId = mutableListOf<Long>()
@@ -111,11 +121,20 @@ class PostDownloader @Inject constructor(
 
             val errorBody = e.response()?.errorBody()?.string()
             Log.e("API_ERROR", "Error body: $errorBody")
-            Toast.makeText(context, context.resources.getString(R.string.cookie_expired), Toast.LENGTH_SHORT).show()
+            withContext(Dispatchers.Main) {
+                Toast.makeText(
+                    context,
+                    context.resources.getString(R.string.cookie_expired),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+
             return mutableListOf()
         } catch (e: Exception) {
             Log.e("API_ERROR", "Exception: ${e.localizedMessage}")
-            Toast.makeText(context, e.localizedMessage, Toast.LENGTH_SHORT).show()
+            withContext(Dispatchers.Main) {
+                Toast.makeText(context, e.localizedMessage, Toast.LENGTH_SHORT).show()
+            }
 
             return mutableListOf()
         }
@@ -140,6 +159,8 @@ class PostDownloader @Inject constructor(
 
 
     private fun downloadPost(item: Items): Post {
+        println("downloadPost 0: ${item.media_type}")
+
         var videoUrl: String? = null
         val path: String
         val extension: String

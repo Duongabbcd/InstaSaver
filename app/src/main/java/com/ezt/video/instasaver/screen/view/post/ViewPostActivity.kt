@@ -127,17 +127,12 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
     }
 
     private fun loadCarousel(link: String) {
-        println("giveMeTheLink 0: $link")
         val viewStub = binding.viewStub.inflate()
         val viewPager: ViewPager2 = viewStub.findViewById(R.id.viewpager)
 
         homeViewModel.getCarousel(link).observe(this) { list ->
             if (list != null && notDeleted) {
                 mediaList = fetchCarousel(list)
-
-                mediaList.forEach { item ->
-                    println("fetchCarousel: $item")
-                }
 
                 if (mediaList.isEmpty()) {
                     Log.e("Carousel", "ERROR: mediaList is EMPTY")
@@ -188,7 +183,6 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
 
         for (carousel in carousels) {
             val title = carousel.title ?: "lol"
-            println("fetchCarousel 1: ${carousel.title}")
             if (carousel.media_type == 1) {
                 val uri = loadPhoto(title)
                 medias.add(CarouselMedia(uri, 1))
@@ -296,7 +290,6 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
 
         return if (photoFile.exists()) {
             val result =  Uri.fromFile(photoFile)
-            println("loadPhoto: $result")
             result
         } else {
             val input = post?.getString("imageUrl")

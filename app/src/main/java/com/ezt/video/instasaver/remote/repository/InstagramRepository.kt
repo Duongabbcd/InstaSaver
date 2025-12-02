@@ -68,8 +68,8 @@ class InstagramRepository @Inject constructor(private val postDao: PostDao,priva
         return postDao.getVideoPosts()
     }
 
-    suspend fun fetchPost(url: String, map: String): MutableList<Long>{
-        return postDownloader.fetchDownloadLink(url,map)
+    suspend fun fetchPost(url: String, map: String, inputItems: Items? = null): MutableList<Long> {
+        return postDownloader.fetchDownloadLink(url, map, inputItems)
     }
 
     fun downloadStory(story: Story): Long{

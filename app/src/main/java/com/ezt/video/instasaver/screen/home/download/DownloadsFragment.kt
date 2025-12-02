@@ -38,6 +38,8 @@ class DownloadsFragment :
     private var photoSelect = false
     private var carouselSelect = false
 
+    private var userName = ""
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val ctx = context ?: return
@@ -94,6 +96,7 @@ class DownloadsFragment :
                 override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                     // 🔥 This is called every time the user types or deletes a character
                     val text = s.toString()
+                    userName = text
                     downloadViewModel.fetchPostsByUser(text, videoSelect, photoSelect, carouselSelect)
                 }
 
@@ -159,9 +162,12 @@ class DownloadsFragment :
                     videoSelect = !videoSelect
                     photoSelect = false
                     carouselSelect = false
-                    if(videoSelect) {
-                        downloadViewModel.fetchVideoPosts()
-                    }
+                    downloadViewModel.fetchPostsByUser(
+                        userName,
+                        videoSelect,
+                        photoSelect,
+                        carouselSelect
+                    )
 
                     updateTextViewAppearance(ctx ,video, videoSelect)
                     updateTextViewAppearance(ctx ,photo, photoSelect)
@@ -178,9 +184,12 @@ class DownloadsFragment :
                     videoSelect = false
                     carouselSelect = false
 
-                    if(photoSelect) {
-                        downloadViewModel.fetchPhotoPosts()
-                    }
+                    downloadViewModel.fetchPostsByUser(
+                        userName,
+                        videoSelect,
+                        photoSelect,
+                        carouselSelect
+                    )
                     updateTextViewAppearance(ctx ,video, videoSelect)
                     updateTextViewAppearance(ctx ,photo, photoSelect)
                     updateTextViewAppearance(ctx ,carousel, carouselSelect)
@@ -196,9 +205,12 @@ class DownloadsFragment :
                     videoSelect = false
                     photoSelect = false
 
-                    if(carouselSelect) {
-                        downloadViewModel.fetchCarouselPosts()
-                    }
+                    downloadViewModel.fetchPostsByUser(
+                        userName,
+                        videoSelect,
+                        photoSelect,
+                        carouselSelect
+                    )
 
                     updateTextViewAppearance(ctx ,video, videoSelect)
                     updateTextViewAppearance(ctx ,photo, photoSelect)

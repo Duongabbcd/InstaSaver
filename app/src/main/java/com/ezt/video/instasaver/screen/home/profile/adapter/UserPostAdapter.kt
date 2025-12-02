@@ -38,6 +38,9 @@ class UserPostAdapter(private val onSelectItemListener: (Items) -> Unit) :
 
     override fun getItemCount(): Int = allPosts.size
     fun getSelectedPosts(): List<Items> = allSelectedPosts.toList()
+    fun clearSelectedPosts() {
+        allSelectedPosts.clear()
+    }
     fun submitList(input: List<Items>) {
         val start = allPosts.size
         allPosts.addAll(input)

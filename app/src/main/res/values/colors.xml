@@ -10,6 +10,7 @@
 
     <color name="backgroundForCaption">#D9000000</color>
     <color name="transparent_black_0_6">#99000000</color>
+    <color name="transparent_black_0_2">#33000000</color>
     <color name="transparent_black">#4D000000</color>
     <color name="transparent_white">#E6FFFFFF</color>
     <color name="transparent_white2">#CCFFFFFF</color>

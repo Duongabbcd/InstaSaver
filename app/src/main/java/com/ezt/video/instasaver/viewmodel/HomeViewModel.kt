@@ -1,10 +1,12 @@
 package com.ezt.video.instasaver.viewmodel
 
 import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ezt.video.instasaver.MyApplication
 import com.ezt.video.instasaver.local.Carousel
 import com.ezt.video.instasaver.model.Items
 import com.ezt.video.instasaver.model.MediaItem
@@ -18,11 +20,12 @@ import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(private val instagramRepository: InstagramRepository) : ViewModel() {
+class HomeViewModel @Inject constructor(private val instagramRepository: InstagramRepository) :
+    ViewModel() {
     val allPosts = instagramRepository.getRecentDownload
-    val postExits= MutableLiveData<Boolean>()
-    var downloadID= MutableLiveData<MutableList<Long>>()
-    var downloadId= MutableLiveData<Long>()
+    val postExits = MutableLiveData<Boolean>()
+    var downloadID = MutableLiveData<MutableList<Long>>()
+    var downloadId = MutableLiveData<Long>()
 
     val allUserPosts = MutableLiveData<MutableList<Items>>(mutableListOf())
     val isLoading = MutableLiveData(false)
@@ -30,17 +33,25 @@ class HomeViewModel @Inject constructor(private val instagramRepository: Instagr
     private val _stats = MutableLiveData<Triple<Int, Int, Int>>()
     val stats: LiveData<Triple<Int, Int, Int>> = _stats
 
-    private suspend fun doesPostExits(url: String):Boolean= withContext(Dispatchers.IO){
+    private suspend fun doesPostExits(url: String): Boolean = withContext(Dispatchers.IO) {
         instagramRepository.doesPostExits(url)
     }
 
-    fun downloadPost(url: String, map: String){
+    fun downloadPost(
+        url: String,
+        map: String,
+        inputItems: Items? = null,
+        onCheckPostExit: (Boolean) -> Unit
+    ) {
+        println("downloadIdList: $url")
         viewModelScope.launch(Dispatchers.IO) {
-            var downloadIdList= mutableListOf<Long>()
-            val postDoesNotExits= withContext(Dispatchers.IO){!doesPostExits(url)}
-            if(postDoesNotExits){
-                downloadIdList= instagramRepository.fetchPost(url,map)
-            }else{
+            var downloadIdList = mutableListOf<Long>()
+            val postDoesNotExits = withContext(Dispatchers.IO) { !doesPostExits(url) }
+            if (postDoesNotExits || url.isEmpty()) {
+                downloadIdList = instagramRepository.fetchPost(url, map, inputItems)
+                onCheckPostExit(false)
+            } else {
+                onCheckPostExit(true)
                 postExits.postValue(true)
             }
             println("downloadIdList: $postDoesNotExits and $downloadIdList")
@@ -48,32 +59,31 @@ class HomeViewModel @Inject constructor(private val instagramRepository: Instagr
         }
     }
 
-    fun downloadPost2(url: String, path:String,title: String){
-        Log.d("tagg","going to download")
+    fun downloadPost2(url: String, path: String, title: String) {
+        Log.d("tagg", "going to download")
         viewModelScope.launch(Dispatchers.IO) {
-            downloadId.postValue(instagramRepository.directDownload(url,path,title))
+            downloadId.postValue(instagramRepository.directDownload(url, path, title))
         }
     }
 
     fun getCarousel(giveMeTheLink: String): LiveData<List<Carousel>> {
-        println("giveMeTheLink 1: $giveMeTheLink")
         return instagramRepository.getCarousel(giveMeTheLink)
     }
 
 
-    fun deletePost(url:String){
-        viewModelScope.launch (Dispatchers.IO){
+    fun deletePost(url: String) {
+        viewModelScope.launch(Dispatchers.IO) {
             instagramRepository.deletePost(url)
         }
     }
 
-    fun deleteCarousel(url:String){
+    fun deleteCarousel(url: String) {
         viewModelScope.launch {
             instagramRepository.deleteCarousel(url)
         }
     }
 
-    suspend fun isCurrentUserCookieValid(cookie: String)  : Boolean{
+    suspend fun isCurrentUserCookieValid(cookie: String): Boolean {
         return instagramRepository.getCurrentUser(cookie)
     }
 
@@ -106,7 +116,7 @@ class HomeViewModel @Inject constructor(private val instagramRepository: Instagr
                 _stats.value = result
 
             } catch (e: HttpException) {
-               println("Server error (${e.code()})")
+                println("Server error (${e.code()})")
 
             } catch (e: IOException) {
                 println("Network error")
@@ -116,7 +126,6 @@ class HomeViewModel @Inject constructor(private val instagramRepository: Instagr
             }
         }
     }
-
 
 
 }

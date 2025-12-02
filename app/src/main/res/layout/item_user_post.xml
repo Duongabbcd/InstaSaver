@@ -9,6 +9,7 @@
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/imageView"
         android:src="@drawable/lisa"
+        android:background="@color/transparent_black_0_2"
         app:shapeAppearanceOverlay="@style/circularImageView_25dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
