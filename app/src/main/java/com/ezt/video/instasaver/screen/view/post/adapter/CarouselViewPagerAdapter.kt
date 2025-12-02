@@ -8,10 +8,11 @@ import android.widget.ImageView
 import android.widget.MediaController
 import android.widget.VideoView
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.ezt.video.instasaver.R
 import com.ezt.video.instasaver.model.CarouselMedia
 
-class CarouselViewPagerAdapter(private val context: Context?, private val dataHolder: List<CarouselMedia>) : RecyclerView.Adapter<CarouselViewPagerAdapter.PageHolder>() {
+class CarouselViewPagerAdapter(private val context: Context, private val dataHolder: List<CarouselMedia>) : RecyclerView.Adapter<CarouselViewPagerAdapter.PageHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PageHolder {
         val inflater= LayoutInflater.from(parent.context)
@@ -24,10 +25,12 @@ class CarouselViewPagerAdapter(private val context: Context?, private val dataHo
         val mediaType= media.mediaType
         val uri= media.uri
         if(mediaType==1) {
+            println("onBindViewHolder 1: $uri")
             holder.videoView.visibility=View.GONE
             holder.imageView.visibility=View.VISIBLE
-            holder.imageView.setImageURI(uri)
+            Glide.with(context).load(uri).into(holder.imageView)
         }else{
+            println("onBindViewHolder 2: $uri")
             holder.imageView.visibility=View.GONE
             holder.videoView.visibility=View.VISIBLE
             holder.videoView.setMediaController(MediaController(context))

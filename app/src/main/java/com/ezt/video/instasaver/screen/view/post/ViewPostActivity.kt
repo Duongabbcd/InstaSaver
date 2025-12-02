@@ -1,20 +1,15 @@
 package com.ezt.video.instasaver.screen.view.post
 
-import android.app.AlertDialog
 import android.app.Dialog
-import android.app.DownloadManager
 import android.app.RecoverableSecurityException
-import android.content.BroadcastReceiver
 import android.content.ClipData
 import android.content.ClipboardManager
-import android.content.ContentUris
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.view.MenuInflater
 import android.view.View
 import android.view.ViewStub
@@ -30,7 +25,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.Glide
-import com.ezt.video.instasaver.MyApplication
 import com.ezt.video.instasaver.R
 import com.ezt.video.instasaver.base.BaseActivity
 import com.ezt.video.instasaver.databinding.ActivityViewPostBinding
@@ -42,17 +36,17 @@ import com.ezt.video.instasaver.utils.Constants
 import com.ezt.video.instasaver.utils.Constants.IMAGE_FOLDER_NAME
 import com.ezt.video.instasaver.utils.Constants.STORY_FOLDER_NAME
 import com.ezt.video.instasaver.utils.Constants.VIDEO_FOLDER_NAME
-import com.ezt.video.instasaver.utils.FileUtils.getDefaultVideoPath
 import com.ezt.video.instasaver.utils.InvalidLinkException
-import com.ezt.video.instasaver.utils.sdk29AndUp
 import com.ezt.video.instasaver.viewmodel.HomeViewModel
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayoutMediator
-import com.squareup.picasso.Picasso
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
 import java.util.regex.Pattern
 import androidx.core.net.toUri
+import com.ezt.video.instasaver.model.Items
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 @AndroidEntryPoint
 class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostBinding::inflate) {
@@ -100,10 +94,13 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
             1 -> {
                 binding.videoView.visibility = View.GONE
                 binding.imageView.visibility = View.VISIBLE
-                val photos = loadPhoto(name)
+                val photos = loadPhoto(name, true)
                 if (photos != null) {
                     binding.imageView.setImageURI(photos)
                     uri = photos
+                } else {
+                    val input = post?.getString("imageUrl")
+                    Glide.with(this@ViewPostActivity).load(input).into(binding.imageView)
                 }
             }
 
@@ -125,20 +122,34 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
 
         binding.captionView.text = caption
         binding.usernameView.text = username
-        setOnClickListeners(isImage, instagramURL, caption, username ?: "", isCarousel)
+        setOnClickListeners(isImage, instagramURL, caption, username, isCarousel)
         initIntentSenderLauncher()
     }
 
     private fun loadCarousel(link: String) {
+        println("giveMeTheLink 0: $link")
         val viewStub = binding.viewStub.inflate()
         val viewPager: ViewPager2 = viewStub.findViewById(R.id.viewpager)
-        homeViewModel.getCarousel(link).observe(this) {
-            if (it != null && notDeleted) {
-                mediaList = fetchCarousel(it)
+
+        homeViewModel.getCarousel(link).observe(this) { list ->
+            if (list != null && notDeleted) {
+                mediaList = fetchCarousel(list)
+
+                mediaList.forEach { item ->
+                    println("fetchCarousel: $item")
+                }
+
+                if (mediaList.isEmpty()) {
+                    Log.e("Carousel", "ERROR: mediaList is EMPTY")
+                    return@observe   // ⛔ stop here to avoid crash
+                }
+
                 viewPager.adapter = CarouselViewPagerAdapter(this@ViewPostActivity, mediaList)
+
                 val tabLayout: TabLayout = viewStub.findViewById(R.id.tabLayout)
-                TabLayoutMediator(tabLayout, viewPager) { _: TabLayout.Tab, _: Int -> }.attach()
-                uri = mediaList[0].uri!!
+                TabLayoutMediator(tabLayout, viewPager) { _, _ -> }.attach()
+
+                uri = mediaList[0].uri!!   // safe now
             }
         }
     }
@@ -159,8 +170,25 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
 
     private fun fetchCarousel(carousels: List<Carousel>): List<CarouselMedia> {
         val medias = mutableListOf<CarouselMedia>()
+        if(carousels.isEmpty()) {
+            val gson = Gson()
+            val type = object : TypeToken<List<Items>>() {}.type
+            val input = post?.getString("carousel_media")  ?: ""
+            val decodedList: List<Items> = gson.fromJson(input, type)
+            decodedList.onEach { item ->
+              if(item.media_type == 1) {
+                    val uri = item.image_versions2.candidates[0].url.toUri()
+                  medias.add(CarouselMedia(uri, 1))
+              } else {
+                  val uri = item.video_versions[0].url.toUri()
+                  medias.add(CarouselMedia(uri, 2))
+              }
+            }
+        }
+
         for (carousel in carousels) {
             val title = carousel.title ?: "lol"
+            println("fetchCarousel 1: ${carousel.title}")
             if (carousel.media_type == 1) {
                 val uri = loadPhoto(title)
                 medias.add(CarouselMedia(uri, 1))
@@ -256,7 +284,7 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
     }
 
 
-    private fun loadPhoto(name: String): Uri? {
+    private fun loadPhoto(name: String, isSingle: Boolean = false): Uri? {
         // Your app's private folder: /Android/data/<package>/files/.VideoDownloader/InstaPhoto (or InstaVideo)
         val photoDir = File(
             if (isPost) STORY_FOLDER_NAME else IMAGE_FOLDER_NAME
@@ -265,15 +293,20 @@ class ViewPostActivity : BaseActivity<ActivityViewPostBinding>(ActivityViewPostB
 
         val photoFile = File(photoDir, name)
 
+
         return if (photoFile.exists()) {
-            Uri.fromFile(photoFile)
+            val result =  Uri.fromFile(photoFile)
+            println("loadPhoto: $result")
+            result
         } else {
+            val input = post?.getString("imageUrl")
+            println("loadPhoto: $input")
 //            AlertDialog.Builder(this@ViewPostActivity)
 //                .setTitle("Photo Not Found")
 //                .setMessage("The photo may have been deleted, renamed, or moved.")
 //                .setNegativeButton("Close") { d, _ -> d.dismiss() }
 //                .show()
-            post?.getString("imageUrl")?.toUri()
+            if(isSingle) null else post?.getString("imageUrl")?.toUri()
         }
     }
 

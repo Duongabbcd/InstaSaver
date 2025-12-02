@@ -56,6 +56,7 @@ class HomeViewModel @Inject constructor(private val instagramRepository: Instagr
     }
 
     fun getCarousel(giveMeTheLink: String): LiveData<List<Carousel>> {
+        println("giveMeTheLink 1: $giveMeTheLink")
         return instagramRepository.getCarousel(giveMeTheLink)
     }
 

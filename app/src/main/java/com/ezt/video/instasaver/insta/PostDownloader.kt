@@ -173,7 +173,8 @@ class PostDownloader @Inject constructor(
         if (avatarFile.exists()) {
             avatarFile.delete()
         }
-        println("downloadPost: ${item.user.username}  and $avatarFile")
+        println("downloadPost 1: ${item.user.username}  and $avatarFile")
+        println("downloadPost 2: ${avatarFile.absolutePath}")
         download(item.user.profile_pic_url, Constants.AVATAR_FOLDER_NAME, item.user.username + ".jpg")
 
         return Post(
@@ -189,7 +190,8 @@ class PostDownloader @Inject constructor(
             extension,
             title,
             avatarFile.absolutePath ,
-            false, false
+            false,
+            false
         )
     }
 

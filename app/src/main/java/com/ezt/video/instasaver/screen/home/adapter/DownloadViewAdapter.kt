@@ -80,6 +80,7 @@ class DownloadViewAdapter(private val load: Boolean, private val allPosts: List<
                 val avatarFile = File(Constants.AVATAR_FOLDER_NAME, post.username.plus(".jpg"))
                 println("DownloadViewHolder file path 1 ${post.username} $avatarFile")
                 println("DownloadViewHolder file path 2 ${avatarFile.exists()}")
+                println("DownloadViewHolder file path 3 ${post.link}")
                 if(avatarFile.exists()) {
                     Glide.with(context).load(Uri.fromFile(avatarFile)).into(profilePicView)
                 }

@@ -3,9 +3,11 @@ package com.ezt.video.instasaver.screen.home.fragment
 import android.app.Dialog
 import android.app.DownloadManager
 import android.content.BroadcastReceiver
+import android.content.ClipData
 import android.content.ClipDescription.MIMETYPE_TEXT_PLAIN
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Context.CLIPBOARD_SERVICE
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
@@ -202,6 +204,16 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
             checkDuplicateAvatars()
             withSafeContext { ctx ->
                 val postLink = binding.editText.text.toString()
+
+                binding.editText.text.clear()
+                val clipboard = ctx.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+                try {
+                    clipboard.clearPrimaryClip()  // Preferred
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    clipboard.setPrimaryClip(ClipData.newPlainText(null, null))
+                }
+
                 if (isInstagramLink(postLink)) {
                     Toast.makeText(ctx, resources.getString(R.string.please_wait), Toast.LENGTH_SHORT)
                         .show()
@@ -215,7 +227,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
                     Toast.makeText(ctx, resources.getString(R.string.invalid_link), Toast.LENGTH_SHORT)
                         .show()
                 }
-                binding.editText.text.clear()
             }
 
         }
@@ -311,7 +322,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
 
             }
 
-            binding.editText.text.clear()
             binding.progressBar.visibility = View.GONE
             load = true
         })

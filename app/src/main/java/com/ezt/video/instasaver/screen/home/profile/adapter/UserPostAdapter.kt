@@ -12,6 +12,7 @@ import com.ezt.video.instasaver.R
 import com.ezt.video.instasaver.databinding.ItemUserPostBinding
 import com.ezt.video.instasaver.model.Items
 import com.ezt.video.instasaver.screen.view.post.ViewPostActivity
+import com.google.gson.Gson
 
 class UserPostAdapter(private val onSelectItemListener: (Items) -> Unit) :
     RecyclerView.Adapter<UserPostAdapter.UserPostViewHolder>() {
@@ -84,12 +85,14 @@ class UserPostAdapter(private val onSelectItemListener: (Items) -> Unit) :
                 root.setOnClickListener {
                     val viewIntent = Intent(context, ViewPostActivity::class.java)
                     val postDetail = Bundle()
+                    val carousel_media = Gson().toJson(item.carousel_media)
                     postDetail.putString("name", item.caption?.text ?: "")
                     postDetail.putInt("media_type", mediaType)
                     postDetail.putString("caption", item.caption?.text ?: "")
                     postDetail.putString("username", item.user.username)
                     postDetail.putString("profilePicture", item.user.profile_pic_url)
                     postDetail.putString("instagram_url", "")
+                    postDetail.putString("carousel_media", carousel_media)
                     postDetail.putString("imageUrl", item.image_versions2.candidates[0].url)
                     postDetail.putString("videoUrl",if(mediaType == 2) item.video_versions[0].url else "")
                     postDetail.putBoolean("isStory", false)
