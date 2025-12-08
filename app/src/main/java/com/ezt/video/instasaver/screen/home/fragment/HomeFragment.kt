@@ -64,7 +64,14 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
                 downloadID.remove(id)
                 viewModel.allPosts.observe(viewLifecycleOwner) {
                     load = false
-                    binding.downloadView.adapter = DownloadViewAdapter(load, it)
+                    binding.downloadView.adapter = DownloadViewAdapter(load, it) { post ->
+                        if (post.media_type == 8) {
+                            viewModel.deleteCarousel(post.link ?: "")
+                        } else {
+                            viewModel.deletePost(post.link ?: "")
+                        }
+
+                    }
                     size = it.size
                 }
 
@@ -414,7 +421,14 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         binding.loading.visible()
         viewModel.allPosts.observe(viewLifecycleOwner) {
             load = false
-            binding.downloadView.adapter = DownloadViewAdapter(load, it.take(5))
+            binding.downloadView.adapter = DownloadViewAdapter(load, it.take(5)) { post ->
+                if (post.media_type == 8) {
+                    viewModel.deleteCarousel(post.link ?: "")
+                } else {
+                    viewModel.deletePost(post.link ?: "")
+                }
+
+            }
 
             binding.loading.gone()
             size = it.size

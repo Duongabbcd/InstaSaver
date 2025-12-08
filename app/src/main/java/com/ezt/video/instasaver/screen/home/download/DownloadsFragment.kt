@@ -46,7 +46,16 @@ class DownloadsFragment :
         val layoutManager = LinearLayoutManager(ctx, LinearLayoutManager.VERTICAL, true)
         layoutManager.stackFromEnd = true
         binding.downloadView.layoutManager = layoutManager
-        downloadViewAdapter2 = DownloadViewAdapter2()
+        downloadViewAdapter2 = DownloadViewAdapter2 { post ->
+            if (post.media_type == 8) {
+                homeViewModel.deleteCarousel(post.link ?: "")
+            } else {
+                homeViewModel.deletePost(post.link ?: "")
+            }
+
+        }
+
+
         binding.downloadView.adapter = downloadViewAdapter2
     }
 

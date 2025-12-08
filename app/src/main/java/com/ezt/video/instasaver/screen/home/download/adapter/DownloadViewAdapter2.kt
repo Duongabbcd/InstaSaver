@@ -17,7 +17,8 @@ import com.ezt.video.instasaver.utils.Constants
 import com.squareup.picasso.Picasso
 import java.io.File
 
-class DownloadViewAdapter2() : RecyclerView.Adapter<DownloadViewAdapter2.DownloadViewHolder2>(){
+class DownloadViewAdapter2(private val onDeleteItem: (Post) -> Unit) :
+    RecyclerView.Adapter<DownloadViewAdapter2.DownloadViewHolder2>() {
     private val allPosts = mutableListOf<Post>()
     private lateinit var context: Context
 
@@ -34,7 +35,7 @@ class DownloadViewAdapter2() : RecyclerView.Adapter<DownloadViewAdapter2.Downloa
         holder: DownloadViewHolder2,
         position: Int
     ) {
-      holder.bind(position)
+        holder.bind(position)
     }
 
     override fun getItemCount(): Int = allPosts.size
@@ -45,12 +46,14 @@ class DownloadViewAdapter2() : RecyclerView.Adapter<DownloadViewAdapter2.Downloa
         notifyDataSetChanged()
     }
 
-    inner class DownloadViewHolder2(private val binding: ItemDownloadViewBinding) : RecyclerView.ViewHolder(binding.root) {
+    inner class DownloadViewHolder2(private val binding: ItemDownloadViewBinding) :
+        RecyclerView.ViewHolder(binding.root) {
         fun bind(position: Int) {
             val post = allPosts[position]
-            println("DownloadViewHolder2: $post")
+
             binding.apply {
-                val mediaType=post.media_type
+                val mediaType = post.media_type
+                println("DownloadViewHolder2: $mediaType and ${post.title}")
                 val postPath = post.path ?: Constants.STORY_FOLDER_NAME
                 if (post.title.isNullOrEmpty()) {
                     return@apply
@@ -60,11 +63,20 @@ class DownloadViewAdapter2() : RecyclerView.Adapter<DownloadViewAdapter2.Downloa
                 val uri = Uri.fromFile(input)
                 Glide.with(context).load(uri).into(imageView)
 
-                when (mediaType){
-                    8 -> mediaTypeIconView.setImageResource(R.drawable.ic_copy)
-                    2 -> mediaTypeIconView.setImageResource(R.drawable.ic_play)
-                    else -> mediaTypeIconView.visibility= View.GONE
+                when (mediaType) {
+                    8 -> {
+                        mediaTypeIconView.visibility = View.VISIBLE
+                        mediaTypeIconView.setImageResource(R.drawable.ic_copy)
+                    }
+
+                    2 -> {
+                        mediaTypeIconView.visibility = View.VISIBLE
+                        mediaTypeIconView.setImageResource(R.drawable.ic_play)
+                    }
+
+                    else -> mediaTypeIconView.visibility = View.GONE
                 }
+
 
                 val avatarFile = File(Constants.AVATAR_FOLDER_NAME, post.username.plus(".jpg"))
                 println("DownloadViewHolder file path 1 ${post.username} $avatarFile")
@@ -72,17 +84,21 @@ class DownloadViewAdapter2() : RecyclerView.Adapter<DownloadViewAdapter2.Downloa
 
                 root.setOnClickListener {
                     val viewIntent = Intent(context, ViewPostActivity::class.java)
-                    val postDetail= Bundle()
-                    postDetail.putString("name",post.title)
-                    postDetail.putInt("media_type",mediaType)
-                    postDetail.putString("caption",post.caption)
-                    postDetail.putString("username",post.username)
-                    postDetail.putString("profilePicture",post.profile_pic_url)
-                    postDetail.putString("instagram_url",post.link)
-                    postDetail.putString("imageUrl",post.image_url)
-                    postDetail.putString("videoUrl",post.video_url)
+                    val postDetail = Bundle()
+                    postDetail.putString("name", post.title)
+                    postDetail.putInt("media_type", mediaType)
+                    postDetail.putString("caption", post.caption)
+                    postDetail.putString("username", post.username)
+                    postDetail.putString("profilePicture", post.profile_pic_url)
+                    postDetail.putString("instagram_url", post.link)
+                    postDetail.putString("imageUrl", post.image_url)
+                    postDetail.putString("videoUrl", post.video_url)
                     viewIntent.putExtras(postDetail)
                     context.startActivity(viewIntent)
+                }
+
+                iconDelete.setOnClickListener {
+                    onDeleteItem(post)
                 }
 
                 usernameView.text = post.username

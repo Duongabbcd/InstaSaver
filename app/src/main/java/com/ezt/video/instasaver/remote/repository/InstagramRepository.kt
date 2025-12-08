@@ -154,6 +154,10 @@ class InstagramRepository @Inject constructor(private val postDao: PostDao,priva
         return postDao.getRecentProfileSearch()
     }
 
+    fun deleteRecentProfileSearch(userName: String) {
+        return postDao.deleteRecentProfileSearch(userName)
+    }
+
     fun insertPost(post: Post){
         postDao.insertPost(post)
     }

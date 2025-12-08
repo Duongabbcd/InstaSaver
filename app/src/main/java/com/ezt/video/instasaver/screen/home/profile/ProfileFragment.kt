@@ -37,7 +37,9 @@ class ProfileFragment : BaseFragment<FragmentProfileBinding>(FragmentProfileBind
             }
 
             dpViewerViewModel.profileRecent.observe(viewLifecycleOwner) {
-                binding.recentView.adapter = RecentProfileAdapter( it, cookies)
+                binding.recentView.adapter = RecentProfileAdapter(it, cookies) { profileRecent ->
+                    dpViewerViewModel.deleteRecentProfile(profileRecent.username)
+                }
             }
 
             binding.fetchButton.setOnClickListener {

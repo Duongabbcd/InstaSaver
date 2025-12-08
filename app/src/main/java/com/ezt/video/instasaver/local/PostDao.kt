@@ -83,4 +83,7 @@ interface PostDao {
 
     @Query("SELECT * FROM PROFILE_RECENT_TABLE ORDER BY ID DESC LIMIT 10")
     fun getRecentProfileSearch(): List<ProfileRecent>
+
+    @Query("DELETE FROM PROFILE_RECENT_TABLE WHERE username= :username")
+    fun deleteRecentProfileSearch(username: String)
 }

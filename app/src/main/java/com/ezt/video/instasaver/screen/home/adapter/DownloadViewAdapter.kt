@@ -21,7 +21,11 @@ import com.ezt.video.instasaver.utils.Constants
 import com.squareup.picasso.Picasso
 import java.io.File
 
-class DownloadViewAdapter(private val load: Boolean, private val allPosts: List<Post>) :
+class DownloadViewAdapter(
+    private val load: Boolean,
+    private val allPosts: List<Post>,
+    private val onDeleteItem: (Post) -> Unit
+) :
     RecyclerView.Adapter<DownloadViewAdapter.DownloadViewHolder>() {
     private lateinit var context: Context
 //    private var load: Boolean = false
@@ -99,6 +103,11 @@ class DownloadViewAdapter(private val load: Boolean, private val allPosts: List<
                     viewIntent.putExtras(postDetail)
                     context.startActivity(viewIntent)
                 }
+
+                iconDelete.setOnClickListener {
+                    onDeleteItem(post)
+                }
+
                 usernameView.text = post.username
                 captionView.text = post.caption
 //                if (load && position == 0) {

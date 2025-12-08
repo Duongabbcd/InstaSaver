@@ -8,11 +8,17 @@ import androidx.recyclerview.widget.RecyclerView
 import com.ezt.video.instasaver.databinding.ItemStorySearchViewBinding
 import com.ezt.video.instasaver.local.ProfileRecent
 import com.ezt.video.instasaver.local.StoryRecent
+import com.ezt.video.instasaver.model.User
 import com.ezt.video.instasaver.screen.download.DownloadStoryActivity
 import com.ezt.video.instasaver.screen.home.profile.ViewProfileActivity
+import com.ezt.video.instasaver.utils.Common.visible
 import com.squareup.picasso.Picasso
 
-class RecentProfileAdapter(private val dataHolder: List<ProfileRecent>, private val cookies: String) :
+class RecentProfileAdapter(
+    private val dataHolder: List<ProfileRecent>,
+    private val cookies: String,
+    private val onDeleteItem: (ProfileRecent) -> Unit
+) :
     RecyclerView.Adapter<RecentProfileAdapter.RecentProfileViewHolder>() {
     private lateinit var context: Context
     override fun onCreateViewHolder(
@@ -42,6 +48,12 @@ class RecentProfileAdapter(private val dataHolder: List<ProfileRecent>, private 
                 Picasso.get().load(profileRecent.profile_pic_url).into(profilePicView)
                 usernameView.text = profileRecent.username
                 fullNameView.text = profileRecent.full_name
+
+                iconDelete.visible()
+                iconDelete.setOnClickListener {
+                    onDeleteItem(profileRecent)
+                }
+
                 root.setOnClickListener {
                     println("RecentProfileViewHolder: $profileRecent")
                     val intent = Intent(context, ViewProfileActivity::class.java)

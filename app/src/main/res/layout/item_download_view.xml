@@ -48,13 +48,12 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/_8sdp"
-        android:layout_marginEnd="@dimen/_8sdp"
         android:ellipsize="end"
         style="@style/CustomTextStyleMedium16sp"
         android:maxLines="1"
         android:textColor="@color/textcolor"
         app:layout_constraintBottom_toBottomOf="@+id/profilePicView"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/iconDelete"
         app:layout_constraintStart_toEndOf="@+id/profilePicView"
         app:layout_constraintTop_toTopOf="@+id/profilePicView" />
 
@@ -82,6 +81,20 @@
         app:layout_constraintBottom_toBottomOf="@+id/imageView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <ImageView
+        android:id="@+id/iconDelete"
+        android:layout_width="@dimen/_36sdp"
+        android:layout_height="@dimen/_36sdp"
+        android:layout_marginEnd="4dp"
+        android:contentDescription="@string/imageView"
+        android:padding="@dimen/_6sdp"
+        android:src="@drawable/ic_delete"
+        android:layout_marginBottom="@dimen/_4sdp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="@+id/captionView"
         app:layout_constraintTop_toTopOf="parent" />
 
 

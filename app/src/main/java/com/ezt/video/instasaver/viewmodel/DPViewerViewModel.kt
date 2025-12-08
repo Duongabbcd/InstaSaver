@@ -64,4 +64,11 @@ class DPViewerViewModel @Inject constructor(private val instagramRepository: Ins
         }
     }
 
+    fun deleteRecentProfile(userName: String) {
+        viewModelScope.launch {
+            instagramRepository.deleteRecentProfileSearch(userName)
+            profileRecent.postValue(instagramRepository.getRecentProfileSearch())
+        }
+    }
+
 }

@@ -23,11 +23,10 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/_8sdp"
-        android:layout_marginEnd="@dimen/_8sdp"
         android:ellipsize="end"
         android:maxLines="1"
         style="@style/CustomTextStyle12sp"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/iconDelete"
         app:layout_constraintStart_toEndOf="@+id/profile_pic_view"
         app:layout_constraintTop_toTopOf="@+id/profile_pic_view" />
 
@@ -37,14 +36,26 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/_8sdp"
         android:layout_marginTop="@dimen/_8sdp"
-        android:layout_marginEnd="@dimen/_8sdp"
         android:ellipsize="end"
         android:gravity="start"
         android:maxLines="3"
         style="@style/CustomTextStyle12sp"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/iconDelete"
         app:layout_constraintStart_toEndOf="@+id/profile_pic_view"
         app:layout_constraintTop_toBottomOf="@+id/username_view" />
+
+    <ImageView
+        android:id="@+id/iconDelete"
+        android:layout_width="@dimen/_40sdp"
+        android:layout_height="@dimen/_40sdp"
+        android:layout_marginEnd="4dp"
+        android:contentDescription="@string/imageView"
+        android:padding="@dimen/_8sdp"
+        android:visibility="gone"
+        android:src="@drawable/ic_delete"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
