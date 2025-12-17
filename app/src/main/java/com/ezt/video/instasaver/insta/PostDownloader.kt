@@ -2,22 +2,17 @@ package com.ezt.video.instasaver.insta
 
 import android.app.DownloadManager
 import android.content.Context
-import android.database.Cursor
 import android.net.Uri
-import android.os.Environment
 import android.util.Log
 import android.widget.Toast
 import com.ezt.video.instasaver.local.Carousel
 import com.ezt.video.instasaver.local.Post
 import com.ezt.video.instasaver.local.PostDao
 import com.ezt.video.instasaver.model.Items
-import com.ezt.video.instasaver.model.ShortCodeMedia
 import com.ezt.video.instasaver.R
 import com.ezt.video.instasaver.remote.network.InstagramAPI
 import com.ezt.video.instasaver.utils.Constants
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import java.io.File
@@ -116,7 +111,7 @@ class PostDownloader @Inject constructor(
                 downloadId.add(download(post.downloadLink, post.path, post.title))
             }
             return downloadId
-        }catch (e: HttpException) {
+        } catch (e: HttpException) {
             Log.e("API_ERROR", "HTTP error: ${e.code()} - ${e.message}")
 
             val errorBody = e.response()?.errorBody()?.string()
@@ -152,6 +147,7 @@ class PostDownloader @Inject constructor(
 
             false
         } catch (e: Exception) {
+            e.printStackTrace()
             // Error also means cookie probably invalid
             false
         }
@@ -189,14 +185,17 @@ class PostDownloader @Inject constructor(
         val caption: String? = item.caption?.text
 
 
-
         val avatarFile = File(Constants.AVATAR_FOLDER_NAME, item.user.username + ".jpg")
         if (avatarFile.exists()) {
             avatarFile.delete()
         }
         println("downloadPost 1: ${item.user.username}  and $avatarFile")
         println("downloadPost 2: ${avatarFile.absolutePath}")
-        download(item.user.profile_pic_url, Constants.AVATAR_FOLDER_NAME, item.user.username + ".jpg")
+        download(
+            item.user.profile_pic_url,
+            Constants.AVATAR_FOLDER_NAME,
+            item.user.username + ".jpg"
+        )
 
         return Post(
             0,
@@ -210,7 +209,7 @@ class PostDownloader @Inject constructor(
             downloadLink,
             extension,
             title,
-            avatarFile.absolutePath ,
+            avatarFile.absolutePath,
             false,
             false
         )
@@ -227,14 +226,16 @@ class PostDownloader @Inject constructor(
         request.setTitle(title)
 
         // Use absolute path with Uri.fromFile
-        val file = File(path, title)
-        if(file.exists()) {
+        val file = File(path, title ?: "")
+        if (file.exists()) {
             println("The file is exist")
             file.delete()
         }
         request.setDestinationUri(Uri.fromFile(file))
 
-        return (context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(request)
+        return (context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(
+            request
+        )
     }
 
     suspend fun getUserStatsByPk(pk: Long): Triple<Int, Int, Int> {
@@ -246,18 +247,20 @@ class PostDownloader @Inject constructor(
             val following = response.following_count
 
             return Triple(posts, followers, following)
-        }
-
-        catch (e: HttpException) {
+        } catch (e: HttpException) {
             Log.e("API_ERROR", "HTTP error: ${e.code()} - ${e.message}")
 
-            Toast.makeText(context, context.resources.getString(R.string.cookie_expired), Toast.LENGTH_SHORT).show()
-            return Triple(0,0,0)
+            Toast.makeText(
+                context,
+                context.resources.getString(R.string.cookie_expired),
+                Toast.LENGTH_SHORT
+            ).show()
+            return Triple(0, 0, 0)
         } catch (e: Exception) {
             Log.e("API_ERROR", "Exception: ${e.localizedMessage}")
             Toast.makeText(context, e.localizedMessage, Toast.LENGTH_SHORT).show()
 
-            return Triple(0,0,0)
+            return Triple(0, 0, 0)
         }
     }
 

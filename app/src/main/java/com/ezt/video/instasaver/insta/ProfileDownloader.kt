@@ -4,15 +4,16 @@ import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import com.ezt.video.instasaver.R
-import com.ezt.video.instasaver.local.PostDao
-import com.ezt.video.instasaver.model.Items
 import com.ezt.video.instasaver.model.UserFeedResponse
 import com.ezt.video.instasaver.remote.network.InstagramAPI
 import com.ezt.video.instasaver.utils.Constants
 import retrofit2.HttpException
 import javax.inject.Inject
 
-class ProfileDownloader @Inject constructor(private val context: Context, private val instagramAPI: InstagramAPI, private val postDao:PostDao) {
+class ProfileDownloader @Inject constructor(
+    private val context: Context,
+    private val instagramAPI: InstagramAPI
+) {
 
     suspend fun getDP(userId: Long,cookies: String): String{
         val link= Constants.DP.format(userId)

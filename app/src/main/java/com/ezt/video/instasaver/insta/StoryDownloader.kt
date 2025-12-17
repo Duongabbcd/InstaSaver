@@ -3,7 +3,6 @@ package com.ezt.video.instasaver.insta
 import android.app.DownloadManager
 import android.content.Context
 import android.net.Uri
-import android.os.Environment
 import android.util.Log
 import android.widget.Toast
 import com.ezt.video.instasaver.R
@@ -99,7 +98,7 @@ class StoryDownloader @Inject constructor(
                 extension,
                 title,
                 code,
-                false, true
+                isCarousel = false, isStory = true
             )
         )
         return download(downloadLink, Constants.STORY_FOLDER_NAME, title)
@@ -124,7 +123,7 @@ class StoryDownloader @Inject constructor(
                 extension,
                 title,
                 story.code,
-                false, true
+                isCarousel = false, isStory = true
             )
         )
         return download(downloadLink, Constants.STORY_FOLDER_NAME, title)
@@ -165,7 +164,7 @@ class StoryDownloader @Inject constructor(
         request.setTitle(title)
 
         // Use absolute path with Uri.fromFile
-        val file = File(path, title)
+        val file = File(path, title ?: "")
         request.setDestinationUri(Uri.fromFile(file))
 
         return (context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(request)

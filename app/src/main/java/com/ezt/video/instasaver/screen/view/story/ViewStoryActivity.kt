@@ -21,7 +21,6 @@ import com.ezt.video.instasaver.base.BaseActivity
 import com.ezt.video.instasaver.R
 import com.ezt.video.instasaver.databinding.ActivityViewStoryBinding
 import com.ezt.video.instasaver.model.Story
-import com.ezt.video.instasaver.screen.view.story.WatchStoriesActivity
 import com.ezt.video.instasaver.utils.sdk29AndUp
 import com.ezt.video.instasaver.viewmodel.StoryViewModel
 import com.squareup.picasso.Picasso
@@ -172,6 +171,7 @@ class ViewStoryActivity :
             binding.downloadButton.visibility = View.GONE
             return uri
         } catch (e: Exception) {
+            e.printStackTrace()
             return Uri.parse(videoUrl)
         }
     }

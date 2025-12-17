@@ -1,25 +1,20 @@
 package com.ezt.video.instasaver.viewmodel
 
 import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.ezt.video.instasaver.MyApplication
 import com.ezt.video.instasaver.local.Carousel
 import com.ezt.video.instasaver.model.Items
-import com.ezt.video.instasaver.model.MediaItem
 import com.ezt.video.instasaver.remote.repository.InstagramRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import retrofit2.HttpException
-import java.io.IOException
 import javax.inject.Inject
 
 @HiltViewModel
@@ -97,31 +92,5 @@ class HomeViewModel @Inject constructor(private val instagramRepository: Instagr
             .flow
             .cachedIn(viewModelScope) // cache in ViewModel for lifecycle safety
     }
-
-
-    fun refresh(userId: Long, cookies: String) {
-        instagramRepository.resetPagination()
-        allUserPosts.value = mutableListOf()
-//        loadMorePosts(userId, cookies)
-    }
-
-    fun loadUserStats(pk: Long) {
-        viewModelScope.launch {
-            try {
-                val result = instagramRepository.getUserStats(pk)
-                _stats.value = result
-
-            } catch (e: HttpException) {
-                println("Server error (${e.code()})")
-
-            } catch (e: IOException) {
-                println("Network error")
-
-            } catch (e: Exception) {
-                println("Unexpected error: ${e.message}")
-            }
-        }
-    }
-
 
 }

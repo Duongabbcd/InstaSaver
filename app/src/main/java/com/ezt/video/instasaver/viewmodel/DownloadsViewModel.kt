@@ -34,19 +34,19 @@ class DownloadsViewModel @Inject constructor(private val instagramRepository: In
         }
     }
 
-    fun fetchCarouselPosts() {
-        viewModelScope.launch {
-            _postByUser.value = instagramRepository.fetchCarouselPosts()
-        }
-    }
-    fun fetchPhotoPosts() {
-        viewModelScope.launch {
-            _postByUser.value = instagramRepository.fetchPhotoPosts()
-        }
-    }
-    fun fetchVideoPosts() {
-        viewModelScope.launch {
-            _postByUser.value = instagramRepository.fetchVideoPosts()
-        }
-    }
+//    fun fetchCarouselPosts() {
+//        viewModelScope.launch {
+//            _postByUser.value = instagramRepository.fetchCarouselPosts()
+//        }
+//    }
+//    fun fetchPhotoPosts() {
+//        viewModelScope.launch {
+//            _postByUser.value = instagramRepository.fetchPhotoPosts()
+//        }
+//    }
+//    fun fetchVideoPosts() {
+//        viewModelScope.launch {
+//            _postByUser.value = instagramRepository.fetchVideoPosts()
+//        }
+//    }
 }

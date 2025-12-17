@@ -2,7 +2,6 @@ package com.ezt.video.instasaver.screen.login
 
 import android.content.ClipData
 import android.content.ClipboardManager
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import com.ezt.video.instasaver.base.BaseActivity

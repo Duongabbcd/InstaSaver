@@ -5,11 +5,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.viewbinding.ViewBinding
 import com.ezt.video.instasaver.screen.home.MainActivity
-import com.ezt.video.instasaver.R
 import com.ezt.video.instasaver.utils.Utils.hideKeyBoard
 
 abstract class BaseFragment<T : ViewBinding>(private val inflate: Inflate<T>) : Fragment() {

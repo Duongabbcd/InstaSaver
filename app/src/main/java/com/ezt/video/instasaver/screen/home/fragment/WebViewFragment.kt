@@ -9,10 +9,8 @@ import android.webkit.WebViewClient
 import android.widget.Toast
 import com.ezt.video.instasaver.base.BaseFragment
 import com.ezt.video.instasaver.databinding.FragmentWebViewBinding
-import com.ezt.video.instasaver.viewmodel.WebViewViewModel
 
 class WebViewFragment : BaseFragment<FragmentWebViewBinding>(FragmentWebViewBinding::inflate){
-    private lateinit var viewModel: WebViewViewModel
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

@@ -42,7 +42,7 @@ class DownloadStoryActivity :
         super.onCreate(savedInstanceState)
 
         init()
-        observeData(this)
+        observeData()
         setOnClickListeners()
         onComplete= object : BroadcastReceiver() {
             @SuppressLint("NotifyDataSetChanged")
@@ -96,7 +96,7 @@ class DownloadStoryActivity :
         }
     }
 
-    private fun observeData(context: Context?){
+    private fun observeData() {
         storyViewModel.stories.observe(this){
             adapter=StoryViewAdapter(this@DownloadStoryActivity, it,resultLauncher){
                 showDownload()

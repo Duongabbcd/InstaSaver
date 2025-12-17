@@ -13,18 +13,14 @@ import android.view.Menu
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import androidx.navigation.findNavController
 import androidx.navigation.ui.NavigationUI.setupWithNavController
 import com.ezt.video.instasaver.base.BaseActivity
 import com.ezt.video.instasaver.databinding.ActivityMainBinding
 import com.ezt.video.instasaver.R
 import com.ezt.video.instasaver.screen.home.fragment.HomeFragment
 import androidx.navigation.fragment.NavHostFragment
-import com.ezt.video.instasaver.utils.Constants
-import com.ezt.video.instasaver.utils.Constants.AVATAR_FOLDER_NAME
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
-import java.io.IOException
 
 @AndroidEntryPoint
 class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::inflate),HomeFragment.DownloadNavigation{
@@ -88,7 +84,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         if(intent.action.equals(Intent.ACTION_SEND)){
             val receivedLink= intent.getStringExtra(Intent.EXTRA_TEXT)
             if(receivedLink!=null){
-                val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clipboard = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
                 val clipData:ClipData= ClipData.newPlainText("link",receivedLink)
                 clipboard.setPrimaryClip(clipData)
             }

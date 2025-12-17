@@ -37,14 +37,15 @@ object DatabaseModule {
     }
 
     val  MIGRATION_1_2 = object : Migration(1, 2) {
-        override fun migrate(database: SupportSQLiteDatabase) {
-            database.execSQL("ALTER TABLE post_table ADD COLUMN isStory INTEGER NOT NULL DEFAULT 0")
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE post_table ADD COLUMN isStory INTEGER NOT NULL DEFAULT 0")
         }
     }
 
     val MIGRATION_2_3 = object : Migration(2, 3) {
-        override fun migrate(database: SupportSQLiteDatabase) {
-            database.execSQL("""
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                """
             CREATE TABLE IF NOT EXISTS profile_recent_table (
                 id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
                 pk INTEGER NOT NULL,
@@ -54,7 +55,8 @@ object DatabaseModule {
             );
         """.trimIndent())
 
-            database.execSQL("""
+            db.execSQL(
+                """
             CREATE UNIQUE INDEX IF NOT EXISTS 
             index_profile_recent_table_username 
             ON profile_recent_table(username)

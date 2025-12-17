@@ -15,7 +15,6 @@ import com.ezt.video.instasaver.utils.Constants.IMAGE_FOLDER_NAME
 import com.ezt.video.instasaver.utils.Constants.STORY_FOLDER_NAME
 import com.ezt.video.instasaver.utils.Constants.VIDEO_FOLDER_NAME
 import com.ezt.video.instasaver.utils.FileUtils
-import com.google.android.material.internal.ContextUtils
 import com.squareup.picasso.BuildConfig
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope

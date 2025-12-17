@@ -15,7 +15,6 @@ import com.ezt.video.instasaver.local.PostDao
 import com.ezt.video.instasaver.local.ProfileRecent
 import com.ezt.video.instasaver.local.StoryRecent
 import com.ezt.video.instasaver.model.Items
-import com.ezt.video.instasaver.model.MediaItem
 import com.ezt.video.instasaver.model.ReelTray
 import com.ezt.video.instasaver.model.SearchUser
 import com.ezt.video.instasaver.model.Story
@@ -28,46 +27,46 @@ class InstagramRepository @Inject constructor(private val postDao: PostDao,priva
     val getAllPost = postDao.getAllPosts()
     val getRecentDownload = postDao.getRecentDownloads()
 
-    private var isLoading = false
-    private var nextMaxId: String? = null
+//    private var isLoading = false
+//    private var nextMaxId: String? = null
+//
+//    private var isLastPage = false
 
-    private var isLastPage = false
-
-    suspend fun fetchPostByUser(
+    fun fetchPostByUser(
         userName: String,
     ) : List<Post> {
         return postDao.getPostsByUsername(userName)
     }
 
-    suspend fun fetchVideoPostByUser(
+    fun fetchVideoPostByUser(
         userName: String,
     ) : List<Post> {
         return postDao.getPhotoPostsByUsername(userName)
     }
 
-    suspend fun fetchPhotoPostByUser(
+    fun fetchPhotoPostByUser(
         userName: String,
     ) : List<Post> {
         return postDao.getVideoPostsByUsername(userName)
     }
 
-    suspend fun fetchCarouselPostByUser(
+    fun fetchCarouselPostByUser(
         userName: String,
     ) : List<Post> {
         return postDao.getCarouselPostsByUsername(userName)
     }
 
-    suspend fun fetchCarouselPosts(
+    fun fetchCarouselPosts(
     ) : List<Post> {
         return postDao.getCarouselPosts()
     }
 
-    suspend fun fetchPhotoPosts(
+    fun fetchPhotoPosts(
     ) : List<Post> {
         return postDao.getPhotoPosts()
     }
 
-    suspend fun fetchVideoPosts(
+    fun fetchVideoPosts(
     ) : List<Post> {
         return postDao.getVideoPosts()
     }
@@ -190,21 +189,21 @@ class InstagramRepository @Inject constructor(private val postDao: PostDao,priva
     }
 
 
-    fun resetPagination() {
-        nextMaxId = null
-    }
-
-    fun hasMorePosts(): Boolean {
-        println("hasMorePosts: $isLastPage")
-        return !isLastPage
-    }
-    suspend fun getUserStats(pk: Long): Triple<Int, Int, Int> {
-        val posts = postDownloader.getUserStatsByPk(pk).first
-        val followers = postDownloader.getUserStatsByPk(pk).second
-        val following =postDownloader.getUserStatsByPk(pk).third
-
-        return Triple(posts, followers, following)
-    }
+//    fun resetPagination() {
+//        nextMaxId = null
+//    }
+//
+//    fun hasMorePosts(): Boolean {
+//        println("hasMorePosts: $isLastPage")
+//        return !isLastPage
+//    }
+//    suspend fun getUserStats(pk: Long): Triple<Int, Int, Int> {
+//        val posts = postDownloader.getUserStatsByPk(pk).first
+//        val followers = postDownloader.getUserStatsByPk(pk).second
+//        val following =postDownloader.getUserStatsByPk(pk).third
+//
+//        return Triple(posts, followers, following)
+//    }
 
 }
 

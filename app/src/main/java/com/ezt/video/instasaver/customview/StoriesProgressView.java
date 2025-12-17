@@ -7,14 +7,11 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.LinearLayout;
-
 import java.util.ArrayList;
 import java.util.List;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import com.ezt.video.instasaver.R;
-
 
 public class StoriesProgressView extends LinearLayout {
 

@@ -10,9 +10,11 @@ object Constants {
     const val INSTAGRAM_HOMEPAGE_LINK="https://www.instagram.com/"
     const val INSTAGRAM="com.instagram.android"
     const val REPOST= "#Repost "
-    const val CAROUSEL= "GraphSidecar"
-    const val IMAGE="GraphImage"
-    const val VIDEO="GraphVideo"
+
+//    const val CAROUSEL= "GraphSidecar"
+//    const val IMAGE="GraphImage"
+//    const val VIDEO="GraphVideo"
+
     const val REEL_MEDIA="https://i.instagram.com/api/v1/feed/reels_media/?reel_ids=%s"
     const val STORY_DOWNLOAD="https://i.instagram.com/api/v1/feed/user/%s/story/"
     const val USER_AGENT =

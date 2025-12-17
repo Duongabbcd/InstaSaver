@@ -3,13 +3,11 @@ package com.ezt.video.instasaver.remote.network
 import com.ezt.video.instasaver.model.InstagramResponse
 import com.ezt.video.instasaver.model.ReelMediaResponse
 import com.ezt.video.instasaver.model.ReelTrayResponse
-import com.ezt.video.instasaver.model.Response
 import com.ezt.video.instasaver.model.StoryHighlightResponse
 import com.ezt.video.instasaver.model.StoryResponse
 import com.ezt.video.instasaver.model.UserFeedResponse
 import com.ezt.video.instasaver.model.UserResponse
 import com.ezt.video.instasaver.model.Users
-import okhttp3.ResponseBody
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Path

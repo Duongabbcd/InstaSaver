@@ -51,8 +51,11 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideProfileDownloader(@ApplicationContext appContext : Context,instagramAPI: InstagramAPI,postDao: PostDao): ProfileDownloader {
-        return ProfileDownloader(appContext,instagramAPI,postDao)
+    fun provideProfileDownloader(
+        @ApplicationContext appContext: Context,
+        instagramAPI: InstagramAPI
+    ): ProfileDownloader {
+        return ProfileDownloader(appContext, instagramAPI)
     }
 
 
