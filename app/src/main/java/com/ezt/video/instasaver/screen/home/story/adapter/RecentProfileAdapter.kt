@@ -5,15 +5,12 @@ import android.content.Intent
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.ezt.video.instasaver.databinding.ItemStorySearchViewBinding
 import com.ezt.video.instasaver.local.ProfileRecent
-import com.ezt.video.instasaver.local.StoryRecent
-import com.ezt.video.instasaver.model.User
-import com.ezt.video.instasaver.screen.download.DownloadStoryActivity
 import com.ezt.video.instasaver.screen.home.profile.ViewProfileActivity
 import com.ezt.video.instasaver.utils.Common.visible
 import com.ezt.video.instasaver.utils.Constants
-import com.squareup.picasso.Picasso
 import java.io.File
 
 class RecentProfileAdapter(
@@ -50,7 +47,8 @@ class RecentProfileAdapter(
                 println("RecentProfileViewHolder: $profileRecent")
                 val profilePicture =
                     File(Constants.AVATAR_FOLDER_NAME, profileRecent.username.plus(".jpg"))
-                Picasso.get().load(profilePicture).into(profilePicView)
+                Glide.with(context).load(profilePicture).into(profilePicView)
+
                 usernameView.text = profileRecent.username
                 fullNameView.text = profileRecent.full_name
 
@@ -60,8 +58,7 @@ class RecentProfileAdapter(
                 }
 
                 root.setOnClickListener {
-
-                val intent = Intent(context, ViewProfileActivity::class.java)
+                    val intent = Intent(context, ViewProfileActivity::class.java)
                     intent.putExtra("username", profileRecent.username)
                     intent.putExtra("fullName", profileRecent.full_name)
                     intent.putExtra("cookies", cookies)

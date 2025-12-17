@@ -5,10 +5,12 @@ import android.content.Intent
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.ezt.video.instasaver.databinding.ItemStorySearchViewBinding
 import com.ezt.video.instasaver.local.StoryRecent
 import com.ezt.video.instasaver.screen.download.DownloadStoryActivity
-import com.squareup.picasso.Picasso
+import com.ezt.video.instasaver.utils.Constants
+import java.io.File
 
 class RecentViewAdapter(private val dataHolder: List<StoryRecent>, private val cookies: String) :
     RecyclerView.Adapter<RecentViewAdapter.RecentViewHolder>() {
@@ -37,7 +39,11 @@ class RecentViewAdapter(private val dataHolder: List<StoryRecent>, private val c
         fun bind(position: Int) {
             val storyRecent = dataHolder[position]
             binding.apply {
-                Picasso.get().load(storyRecent.profile_pic_url).into(profilePicView)
+                val profilePicture =
+                    File(Constants.AVATAR_FOLDER_NAME, storyRecent.username.plus(".jpg"))
+                Glide.with(context).load(profilePicture).into(profilePicView)
+
+
                 usernameView.text = storyRecent.username
                 fullNameView.text = storyRecent.full_name
                 root.setOnClickListener {
