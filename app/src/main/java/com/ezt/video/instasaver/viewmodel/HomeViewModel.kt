@@ -6,6 +6,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import com.ezt.video.instasaver.MyApplication
 import com.ezt.video.instasaver.local.Carousel
 import com.ezt.video.instasaver.model.Items
@@ -13,6 +15,7 @@ import com.ezt.video.instasaver.model.MediaItem
 import com.ezt.video.instasaver.remote.repository.InstagramRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
@@ -88,25 +91,18 @@ class HomeViewModel @Inject constructor(private val instagramRepository: Instagr
     }
 
 
-    fun loadMorePosts(userId: Long, cookies: String) {
-        if (!instagramRepository.hasMorePosts()) return
-        isLoading.value = true
-        viewModelScope.launch {
-            val response = instagramRepository.getAllPosts(userId, cookies)
-            response.let { newItems ->
-                val current = allUserPosts.value ?: mutableListOf()
-                current.addAll(newItems)
-                allUserPosts.postValue(current)
-                isLoading.postValue(false)
-            }
-        }
+    fun getAllPosts(userId: Long, cookies: String): Flow<PagingData<Items>> {
+        return instagramRepository
+            .getAllPosts(userId, cookies)
+            .flow
+            .cachedIn(viewModelScope) // cache in ViewModel for lifecycle safety
     }
 
 
     fun refresh(userId: Long, cookies: String) {
         instagramRepository.resetPagination()
         allUserPosts.value = mutableListOf()
-        loadMorePosts(userId, cookies)
+//        loadMorePosts(userId, cookies)
     }
 
     fun loadUserStats(pk: Long) {

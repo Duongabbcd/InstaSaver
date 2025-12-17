@@ -1,6 +1,10 @@
 package com.ezt.video.instasaver.remote.repository
 
 import androidx.lifecycle.LiveData
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingSource
+import androidx.paging.PagingState
 import com.ezt.video.instasaver.insta.PostDownloader
 import com.ezt.video.instasaver.insta.ProfileDownloader
 import com.ezt.video.instasaver.insta.StoryDownloader
@@ -171,22 +175,18 @@ class InstagramRepository @Inject constructor(private val postDao: PostDao,priva
         return postDownloader.isCookieValid(cookie)
     }
 
-    suspend fun getAllPosts(userId: Long, cookies: String): List<Items> {
-        if (isLoading || isLastPage) return emptyList()
-        isLoading = true
-
-        return try {
-            val response = profileDownloader.getAllPosts(userId, cookies, nextMaxId)
-            nextMaxId = response?.next_max_id
-
-            if (response?.next_max_id == null) {
-                isLastPage = true
+    fun getAllPosts(userId: Long, cookies: String): Pager<String, Items> {
+        return Pager(
+            config = PagingConfig(
+                pageSize = 18,
+                initialLoadSize = 18,
+                prefetchDistance = 15,
+                enablePlaceholders = false
+            ),
+            pagingSourceFactory = {
+                InstagramPostsPagingSource(profileDownloader, userId, cookies)
             }
-
-            response?.items ?: listOf()
-        } finally {
-            isLoading = false
-        }
+        )
     }
 
 
@@ -206,4 +206,34 @@ class InstagramRepository @Inject constructor(private val postDao: PostDao,priva
         return Triple(posts, followers, following)
     }
 
+}
+
+class InstagramPostsPagingSource(
+    private val profileDownloader: ProfileDownloader,
+    private val userId: Long,
+    private val cookies: String
+) : PagingSource<String, Items>() {
+    override fun getRefreshKey(state: PagingState<String, Items>): String? {
+        return null // simple forward-only pagination
+    }
+
+    override suspend fun load(params: LoadParams<String>): LoadResult<String, Items> {
+        return try {
+            val nextMaxId = params.key  // null = first page
+            println("InstagramPostsPagingSource: $nextMaxId")
+            val response = profileDownloader.getAllPosts(userId, cookies, nextMaxId)
+
+            val items = response?.items ?: emptyList()
+            val nextKey = response?.next_max_id  // Instagram pagination cursor
+
+            LoadResult.Page(
+                data = items,
+                prevKey = null,      // Only forward pagination
+                nextKey = nextKey    // null if no more pages
+            )
+
+        } catch (e: Exception) {
+            LoadResult.Error(e)
+        }
+    }
 }

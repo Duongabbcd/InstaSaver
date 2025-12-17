@@ -14,7 +14,9 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.ezt.video.instasaver.R
@@ -27,6 +29,8 @@ import com.ezt.video.instasaver.utils.Common.visible
 import com.ezt.video.instasaver.utils.Constants.AVATAR_FOLDER_NAME
 import com.ezt.video.instasaver.viewmodel.HomeViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import java.io.File
 import kotlin.collections.component1
 import kotlin.collections.component2
@@ -169,29 +173,26 @@ class ViewProfileActivity :
             userAllPosts.layoutManager =
                 GridLayoutManager(this@ViewProfileActivity, 3)
             userAllPosts.adapter = userPostAdapter
-            userAllPosts.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-                override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
-                    super.onScrolled(rv, dx, dy)
-                    if (dy <= 0) return
 
-                    val layoutManager = rv.layoutManager as GridLayoutManager
-                    val lastVisible = layoutManager.findLastVisibleItemPosition()
-                    val totalItems = userPostAdapter.itemCount
-                    val visibleThreshold = 4
-
-                    if (lastVisible + visibleThreshold >= totalItems) {
-                        viewModel.loadMorePosts(userId, cookies)
-                    }
-                }
-            })
-
-            viewModel.allUserPosts.observe(this@ViewProfileActivity) { mediaItems ->
-                mediaItems.onEach {
-                    println("allUserPosts: $it")
-                }
-                val newItems = mediaItems.drop(userPostAdapter.itemCount)
-                userPostAdapter.submitList(newItems)
-            }
+//            userAllPosts.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+//                override fun onScrolled(rv: RecyclerView, dx: Int, dy: Int) {
+//                    super.onScrolled(rv, dx, dy)
+//                    if (dy <= 0) return
+//
+//                    val layoutManager = rv.layoutManager as GridLayoutManager
+//                    val lastVisible = layoutManager.findLastVisibleItemPosition()
+//                    val totalItems = userPostAdapter.itemCount
+//                    val visibleThreshold = 4
+//
+//                    if (lastVisible + visibleThreshold >= totalItems) {
+//                        viewModel.loadMorePosts(userId, cookies)
+//                    }
+//                }
+//            })
+//
+//            viewModel.allUserPosts.observe(this@ViewProfileActivity) { mediaItems ->
+//                userPostAdapter.submitList(mediaItems)
+//            }
 
             viewModel.downloadID.observe(this@ViewProfileActivity) {
                 if (it.isNotEmpty() && it[0] == 3L) {
@@ -216,7 +217,35 @@ class ViewProfileActivity :
 
     override fun onResume() {
         super.onResume()
-        viewModel.loadMorePosts(userId, cookies)
+        lifecycleScope.launch {
+            viewModel.getAllPosts(userId, cookies).collectLatest { pagingData ->
+                userPostAdapter.submitData(pagingData)
+            }
+        }
+
+        userPostAdapter.addLoadStateListener { loadState ->
+            binding.apply {
+                // Show progressBar only when loading the initial page or appending next pages
+                loading.isVisible = loadState.source.refresh is LoadState.Loading
+                        || loadState.append is LoadState.Loading
+
+                // Optionally handle error state
+                val errorState = when {
+                    loadState.source.refresh is LoadState.Error -> loadState.source.refresh as LoadState.Error
+                    loadState.append is LoadState.Error -> loadState.append as LoadState.Error
+                    else -> null
+                }
+
+                errorState?.let {
+                    Toast.makeText(
+                        this@ViewProfileActivity,
+                        "Error: ${it.error.localizedMessage}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+
 
         viewModel.isLoading.observe(this) { loading ->
             if (loading) binding.loading.visible() else binding.loading.gone()

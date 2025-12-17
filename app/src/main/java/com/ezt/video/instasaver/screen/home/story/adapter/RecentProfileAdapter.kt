@@ -12,7 +12,9 @@ import com.ezt.video.instasaver.model.User
 import com.ezt.video.instasaver.screen.download.DownloadStoryActivity
 import com.ezt.video.instasaver.screen.home.profile.ViewProfileActivity
 import com.ezt.video.instasaver.utils.Common.visible
+import com.ezt.video.instasaver.utils.Constants
 import com.squareup.picasso.Picasso
+import java.io.File
 
 class RecentProfileAdapter(
     private val dataHolder: List<ProfileRecent>,
@@ -45,7 +47,10 @@ class RecentProfileAdapter(
         fun bind(position: Int) {
             val profileRecent: ProfileRecent = dataHolder[position]
             binding.apply {
-                Picasso.get().load(profileRecent.profile_pic_url).into(profilePicView)
+                println("RecentProfileViewHolder: $profileRecent")
+                val profilePicture =
+                    File(Constants.AVATAR_FOLDER_NAME, profileRecent.username.plus(".jpg"))
+                Picasso.get().load(profilePicture).into(profilePicView)
                 usernameView.text = profileRecent.username
                 fullNameView.text = profileRecent.full_name
 
@@ -55,8 +60,8 @@ class RecentProfileAdapter(
                 }
 
                 root.setOnClickListener {
-                    println("RecentProfileViewHolder: $profileRecent")
-                    val intent = Intent(context, ViewProfileActivity::class.java)
+
+                val intent = Intent(context, ViewProfileActivity::class.java)
                     intent.putExtra("username", profileRecent.username)
                     intent.putExtra("fullName", profileRecent.full_name)
                     intent.putExtra("cookies", cookies)

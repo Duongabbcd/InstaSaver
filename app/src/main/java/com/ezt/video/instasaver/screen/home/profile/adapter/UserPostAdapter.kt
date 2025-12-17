@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.paging.PagingDataAdapter
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.ezt.video.instasaver.R
@@ -15,9 +17,10 @@ import com.ezt.video.instasaver.screen.view.post.ViewPostActivity
 import com.google.gson.Gson
 
 class UserPostAdapter(private val onSelectItemListener: (Items) -> Unit) :
-    RecyclerView.Adapter<UserPostAdapter.UserPostViewHolder>() {
-    private val allPosts = mutableListOf<Items>()
+    PagingDataAdapter<Items, UserPostAdapter.UserPostViewHolder>(DIFF_CALLBACK) {
     private val allSelectedPosts = mutableListOf<Items>()
+
+
     private lateinit var context: Context
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -33,26 +36,20 @@ class UserPostAdapter(private val onSelectItemListener: (Items) -> Unit) :
         holder: UserPostViewHolder,
         position: Int
     ) {
-        holder.bind(position)
+        val item = getItem(position)
+        holder.bind(item)
     }
 
-    override fun getItemCount(): Int = allPosts.size
     fun getSelectedPosts(): List<Items> = allSelectedPosts.toList()
     fun clearSelectedPosts() {
         allSelectedPosts.clear()
     }
-    fun submitList(input: List<Items>) {
-        val start = allPosts.size
-        allPosts.addAll(input)
-        notifyItemRangeInserted(start, input.size)  // notify only new items
-
-    }
 
     inner class UserPostViewHolder(private val binding: ItemUserPostBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(position: Int) {
+        fun bind(item: Items?) {
+            if (item == null) return
             binding.apply {
-                val item: Items = allPosts[position]
 
                 val mediaType = item.media_type
                 when (mediaType) {
@@ -102,6 +99,20 @@ class UserPostAdapter(private val onSelectItemListener: (Items) -> Unit) :
                     viewIntent.putExtras(postDetail)
                     context.startActivity(viewIntent)
                 }
+            }
+        }
+    }
+
+
+    companion object {
+        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<Items>() {
+
+            override fun areItemsTheSame(oldItem: Items, newItem: Items): Boolean {
+                return oldItem.user == newItem.user   // Must be unique ID from API
+            }
+
+            override fun areContentsTheSame(oldItem: Items, newItem: Items): Boolean {
+                return oldItem == newItem         // Requires Items to be a data class!
             }
         }
     }
