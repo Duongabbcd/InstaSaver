@@ -54,6 +54,7 @@ class DownloadsFragment :
             }
 
         }
+        binding.downloadView.scrollToPosition(0)
 
 
         binding.downloadView.adapter = downloadViewAdapter2

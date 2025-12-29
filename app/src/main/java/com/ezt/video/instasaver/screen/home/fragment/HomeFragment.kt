@@ -38,6 +38,7 @@ import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.iterator
 import androidx.navigation.findNavController
+import kotlinx.coroutines.Dispatchers
 
 @AndroidEntryPoint
 class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::inflate) {
@@ -45,23 +46,26 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
     private val storyViewModel: StoryViewModel by viewModels()
 
     private var cookies: String? = null
-    private var downloadID = mutableListOf<Long>()
+    private var currentDownloadId = mutableListOf<Long>()
+    private var currentDownloadStoryId = 0L
     private var size: Int = 0
     private lateinit var navigation: DownloadNavigation
 
     //    private lateinit var downloadViewAdapter: DownloadViewAdapter
     private lateinit var loadingDialog: Dialog
 
+    private var isStories = false
+
     private val onCompleteReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             val id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
-            println("onCompleteReceiver: $downloadID and $id")
+            println("onCompleteReceiver: $currentDownloadId and $id")
             val holder = binding.downloadView.findViewHolderForAdapterPosition(0)
                     as? DownloadViewAdapter.DownloadViewHolder
             holder?.loadingViewStub?.visible()
 
-            if (id != -1L && downloadID.contains(id)) {
-                downloadID.remove(id)
+            if ((id != -1L && currentDownloadId.contains(id)) || isStories) {
+                currentDownloadId.remove(id)
                 viewModel.allPosts.observe(viewLifecycleOwner) {
                     load = false
                     binding.downloadView.adapter = DownloadViewAdapter(load, it) { post ->
@@ -96,9 +100,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
 //        downloadViewAdapter = DownloadViewAdapter()
 //        binding.downloadView.adapter = downloadViewAdapter
         view.viewTreeObserver?.addOnWindowFocusChangeListener {
-            if (cookies != null) {
-                checkClipboard()
-            }
+            checkClipboard()
         }
     }
 
@@ -309,6 +311,7 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
                 }
                 startActivity(Intent(context, RequestLoginActivity::class.java))
             } else {
+                isStories = link.contains("stories")
                 if (link.contains("stories")) {
                     val searchUser = getStoryUsername(link) ?: ""
                     cookies?.let { cookie ->
@@ -326,20 +329,20 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
 
                 } else {
                     viewModel.downloadPost(link, cookies!!, null) { output ->
-                        if (output) {
-                            Toast.makeText(
-                                requireContext(),
-                                resources.getString(R.string.file_already_exist),
-                                Toast.LENGTH_SHORT
-                            ).show()
-
-                        } else {
-                            Toast.makeText(
-                                requireContext(),
-                                resources.getString(R.string.file_downloaded_successfully),
-                                Toast.LENGTH_SHORT
-                            ).show()
-
+                        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.Main) {
+                            if (output) {
+                                Toast.makeText(
+                                    requireContext(),
+                                    getString(R.string.file_already_exist),
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            } else {
+                                Toast.makeText(
+                                    requireContext(),
+                                    getString(R.string.file_downloaded_successfully),
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
                         }
                     }
                 }
@@ -353,11 +356,15 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
     }
 
     private fun cookieIsStillValid(cookie: String?, onValid: (Boolean) -> Unit) {
-
-        cookie?.let {
-            lifecycleScope.launch {
-               val x: Boolean =  viewModel.isCurrentUserCookieValid(cookie)
-                onValid(x)
+        println("cookieIsStillValid: $cookie")
+        if (cookie == null) {
+            onValid(false)
+        } else {
+            cookie.let {
+                lifecycleScope.launch {
+                    val x: Boolean = viewModel.isCurrentUserCookieValid(cookie)
+                    onValid(x)
+                }
             }
         }
     }
@@ -444,14 +451,14 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(FragmentHomeBinding::infl
         }
 
         viewModel.downloadID.observe(viewLifecycleOwner) {
+            println("viewModel.downloadID: $it")
             if (it.isNotEmpty() && it[0] == 3L) {
                 binding.progressBar.visibility = View.GONE
                 startActivity(Intent(context, RequestLoginActivity::class.java))
                 Toast.makeText(context, "JsonEncodingException", Toast.LENGTH_SHORT).show()
             } else {
-                downloadID = it
+                currentDownloadId = it
             }
-
         }
 
     }

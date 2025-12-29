@@ -14,14 +14,17 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.ezt.video.instasaver.base.BaseActivity
 import com.ezt.video.instasaver.databinding.ActivityDownloadStoryBinding
 import com.ezt.video.instasaver.model.Story
 import com.ezt.video.instasaver.R
 import com.ezt.video.instasaver.screen.download.adapter.StoryHighlightViewAdapter
 import com.ezt.video.instasaver.screen.download.adapter.StoryViewAdapter
+import com.ezt.video.instasaver.utils.Utils.hideKeyBoard
 import com.ezt.video.instasaver.viewmodel.StoryViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -44,22 +47,26 @@ class DownloadStoryActivity :
         init()
         observeData()
         setOnClickListeners()
-        onComplete= object : BroadcastReceiver() {
+        onComplete = object : BroadcastReceiver() {
             @SuppressLint("NotifyDataSetChanged")
             override fun onReceive(context: Context, intent: Intent) {
                 val id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
                 downloadIds.remove(id)
-                if(downloadIds.isEmpty()  ){
-                    adapter.isEnabled=false
+                if (downloadIds.isEmpty()) {
+                    adapter.isEnabled = false
                     val selectedStories: List<Int> = adapter.selectedStories
-                    for(position in selectedStories){
-                        adapter.dataHolder[position].downloaded=true
+                    for (position in selectedStories) {
+                        adapter.dataHolder[position].downloaded = true
                     }
-                    selecting=false
+                    selecting = false
                     adapter.reset()
                     adapter.notifyDataSetChanged()
-                    binding.downloadButton.visibility= View.GONE
-                    Toast.makeText(context,resources.getString(R.string.download_complete), Toast.LENGTH_SHORT).show()
+                    binding.downloadButton.visibility = View.GONE
+                    Toast.makeText(
+                        context,
+                        resources.getString(R.string.download_complete),
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
 
             }
@@ -67,43 +74,56 @@ class DownloadStoryActivity :
 
     }
 
-    private fun init(){
-        cookies=intent.getStringExtra("cookie") ?: ""
-        username=intent.getStringExtra("username") ?: ""
-        val showHighlights=intent.getBooleanExtra("showHighlights",true)
-        val userId=intent.getLongExtra("userId",0)
-        binding.usernameView.text=username
-        binding.progressBar.visibility=View.VISIBLE
-        if(showHighlights) {
+    private fun init() {
+        cookies = intent.getStringExtra("cookie") ?: ""
+        username = intent.getStringExtra("username") ?: ""
+        val showHighlights = intent.getBooleanExtra("showHighlights", true)
+        val userId = intent.getLongExtra("userId", 0)
+        binding.usernameView.text = username
+        binding.progressBar.visibility = View.VISIBLE
+        if (showHighlights) {
             storyViewModel.fetchStoryHighlights(userId, cookies)
-            storyViewModel.fetchStory(userId,cookies)
-        }else{
-            val highlightId=intent.getStringExtra("highlightId")?:""
-            storyViewModel.fetchStoryHighlightsStories(highlightId,cookies)
+            storyViewModel.fetchStory(userId, cookies)
+        } else {
+            val highlightId = intent.getStringExtra("highlightId") ?: ""
+            storyViewModel.fetchStoryHighlightsStories(highlightId, cookies)
         }
-        binding.downloadView.layoutManager= GridLayoutManager(this,3)
-        binding.storyHighlightView.layoutManager= LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL,false)
-        resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-            if (result.resultCode == RESULT_OK) {
-                val intent: Intent? = result.data
-                val downloaded=intent?.getBooleanExtra("downloaded",true) ?: true
-                val position=intent?.getIntExtra("position",-1) ?: -1
-                if(downloaded && position!=-1){
-                    adapter.dataHolder[position].downloaded=true
-                    adapter.notifyItemChanged(position)
+        binding.downloadView.layoutManager = GridLayoutManager(this, 3)
+        binding.storyHighlightView.layoutManager =
+            LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        resultLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode == RESULT_OK) {
+                    val intent: Intent? = result.data
+                    val downloaded = intent?.getBooleanExtra("downloaded", true) ?: true
+                    val position = intent?.getIntExtra("position", -1) ?: -1
+                    if (downloaded && position != -1) {
+                        adapter.dataHolder[position].downloaded = true
+                        adapter.notifyItemChanged(position)
+                    }
                 }
             }
-        }
+
+        binding.downloadView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+                if (newState == RecyclerView.SCROLL_STATE_IDLE || newState == RecyclerView.SCROLL_STATE_DRAGGING) {
+                    this@DownloadStoryActivity.hideKeyBoard(binding.downloadView)
+                }
+
+            }
+        })
     }
 
     private fun observeData() {
-        storyViewModel.stories.observe(this){
-            adapter=StoryViewAdapter(this@DownloadStoryActivity, it,resultLauncher){
+        storyViewModel.stories.observe(this) {
+            binding.noCurrentStories.isVisible = it.isEmpty()
+            adapter = StoryViewAdapter(this@DownloadStoryActivity, it, resultLauncher) {
                 showDownload()
             }
-            binding.downloadView.adapter=adapter
-            stories=it
-            binding.progressBar.visibility=View.GONE
+            binding.downloadView.adapter = adapter
+            stories = it
+            binding.progressBar.visibility = View.GONE
 //            if(it.isEmpty()){
 //                if(binding.noStoriesFoundViewStub.parent!=null){
 //                    binding.noStoriesFoundViewStub.inflate()
@@ -116,11 +136,13 @@ class DownloadStoryActivity :
 
         }
 
-        storyViewModel.storyHighlights.observe(this){
-            binding.storyHighlightView.adapter = StoryHighlightViewAdapter(this@DownloadStoryActivity,it,cookies)
+        storyViewModel.storyHighlights.observe(this) {
+            binding.noHighlightStories.isVisible = it.isEmpty()
+            binding.storyHighlightView.adapter =
+                StoryHighlightViewAdapter(this@DownloadStoryActivity, it, cookies)
         }
 
-        storyViewModel.downloadId.observe(this){
+        storyViewModel.downloadId.observe(this) {
             downloadIds.add(it)
         }
 
@@ -128,25 +150,25 @@ class DownloadStoryActivity :
 
     private fun setOnClickListeners() {
         binding.downloadButton.setOnClickListener {
-            adapter.loading=true
+            adapter.loading = true
             val selectedStories: List<Int> = adapter.selectedStories
-            for(position in selectedStories){
+            for (position in selectedStories) {
                 adapter.notifyItemChanged(position)
                 storyViewModel.downloadStory(stories[position])
             }
         }
 
-        binding.backButton.setOnClickListener{
+        binding.backButton.setOnClickListener {
             finish()
 
         }
     }
 
     @SuppressLint("NotifyDataSetChanged")
-    private fun showDownload(){
+    private fun showDownload() {
         adapter.notifyDataSetChanged()
-        selecting=true
-        binding.downloadButton.visibility=View.VISIBLE
+        selecting = true
+        binding.downloadButton.visibility = View.VISIBLE
     }
 
     override fun onStart() {

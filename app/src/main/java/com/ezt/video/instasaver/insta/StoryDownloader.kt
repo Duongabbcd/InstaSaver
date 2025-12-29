@@ -14,6 +14,8 @@ import com.ezt.video.instasaver.model.Story
 import com.ezt.video.instasaver.model.StoryHighlight
 import com.ezt.video.instasaver.remote.network.InstagramAPI
 import com.ezt.video.instasaver.utils.Constants
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 import java.io.File
 import java.text.SimpleDateFormat
@@ -46,16 +48,24 @@ class StoryDownloader @Inject constructor(
                     )
                 )
             }
-        }catch (e: HttpException) {
+        } catch (e: HttpException) {
             Log.e("API_ERROR", "HTTP error: ${e.code()} - ${e.message}")
 
             val errorBody = e.response()?.errorBody()?.string()
             Log.e("API_ERROR", "Error body: $errorBody")
-            Toast.makeText(context, context.resources.getString(R.string.cookie_expired), Toast.LENGTH_SHORT).show()
+            withContext(Dispatchers.Main) {
+                Toast.makeText(
+                    context,
+                    context.resources.getString(R.string.cookie_expired),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+
         } catch (e: Exception) {
             Log.e("API_ERROR", "Exception: ${e.localizedMessage}")
-            Toast.makeText(context, e.localizedMessage, Toast.LENGTH_SHORT).show()
-
+//            withContext(Dispatchers.Main) {
+//                Toast.makeText(context, e.localizedMessage, Toast.LENGTH_SHORT).show()
+//            }
         }
         return stories
     }
@@ -83,7 +93,7 @@ class StoryDownloader @Inject constructor(
             avatarFile.delete() // delete old file
         }
         download(story.profilePicUrl, Constants.AVATAR_FOLDER_NAME, story.username + ".jpg")
-
+        postDao.deletePost(story.code)
         postDao.insertPost(
             Post(
                 0,
@@ -109,6 +119,7 @@ class StoryDownloader @Inject constructor(
         val currentTime = System.currentTimeMillis()
         val title = "${username}_${currentTime}$extension"
         val caption = "${username}'s story from ${formatter.format(currentTime)}"
+        postDao.deletePost(story.code)
         postDao.insertPost(
             Post(
                 0,
@@ -145,10 +156,20 @@ class StoryDownloader @Inject constructor(
 
             val errorBody = e.response()?.errorBody()?.string()
             Log.e("API_ERROR", "Error body: $errorBody")
-            Toast.makeText(context, context.resources.getString(R.string.cookie_expired), Toast.LENGTH_SHORT).show()
+            withContext(Dispatchers.Main) {
+                Toast.makeText(
+                    context,
+                    context.resources.getString(R.string.cookie_expired),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+
         } catch (e: Exception) {
             Log.e("API_ERROR", "Exception: ${e.localizedMessage}")
-            Toast.makeText(context, e.localizedMessage, Toast.LENGTH_SHORT).show()
+//            withContext(Dispatchers.Main) {
+//                Toast.makeText(context, e.localizedMessage, Toast.LENGTH_SHORT).show()
+//            }
+
 
         }
         return result
@@ -167,7 +188,9 @@ class StoryDownloader @Inject constructor(
         val file = File(path, title ?: "")
         request.setDestinationUri(Uri.fromFile(file))
 
-        return (context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(request)
+        return (context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager).enqueue(
+            request
+        )
     }
 
     suspend fun getReelMedia(reelId: Long, cookie: String): ReelTray? {
@@ -179,11 +202,20 @@ class StoryDownloader @Inject constructor(
 
             val errorBody = e.response()?.errorBody()?.string()
             Log.e("API_ERROR", "Error body: $errorBody")
-            Toast.makeText(context, context.resources.getString(R.string.cookie_expired), Toast.LENGTH_SHORT).show()
+            withContext(Dispatchers.Main) {
+                Toast.makeText(
+                    context,
+                    context.resources.getString(R.string.cookie_expired),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+
             null
         } catch (e: Exception) {
             Log.e("API_ERROR", "Exception: ${e.localizedMessage}")
-            Toast.makeText(context, e.localizedMessage, Toast.LENGTH_SHORT).show()
+//            withContext(Dispatchers.Main) {
+//                Toast.makeText(context, e.localizedMessage, Toast.LENGTH_SHORT).show()
+//            }
             null
         }
 
@@ -212,15 +244,24 @@ class StoryDownloader @Inject constructor(
                     )
                 }
             }
-        }catch (e: HttpException) {
+        } catch (e: HttpException) {
             Log.e("API_ERROR", "HTTP error: ${e.code()} - ${e.message}")
 
             val errorBody = e.response()?.errorBody()?.string()
             Log.e("API_ERROR", "Error body: $errorBody")
-            Toast.makeText(context, context.resources.getString(R.string.cookie_expired), Toast.LENGTH_SHORT).show()
+            withContext(Dispatchers.Main) {
+                Toast.makeText(
+                    context,
+                    context.resources.getString(R.string.cookie_expired),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+
         } catch (e: Exception) {
             Log.e("API_ERROR", "Exception: ${e.localizedMessage}")
-            Toast.makeText(context, e.localizedMessage, Toast.LENGTH_SHORT).show()
+//            withContext(Dispatchers.Main) {
+//                Toast.makeText(context, e.localizedMessage, Toast.LENGTH_SHORT).show()
+//            }
 
         }
         return stories
@@ -244,10 +285,19 @@ class StoryDownloader @Inject constructor(
 
             val errorBody = e.response()?.errorBody()?.string()
             Log.e("API_ERROR", "Error body: $errorBody")
-            Toast.makeText(context, context.resources.getString(R.string.cookie_expired), Toast.LENGTH_SHORT).show()
+            withContext(Dispatchers.Main) {
+                Toast.makeText(
+                    context,
+                    context.resources.getString(R.string.cookie_expired),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+
         } catch (e: Exception) {
             Log.e("API_ERROR", "Exception: ${e.localizedMessage}")
-            Toast.makeText(context, e.localizedMessage, Toast.LENGTH_SHORT).show()
+//            withContext(Dispatchers.Main) {
+//                Toast.makeText(context, e.localizedMessage, Toast.LENGTH_SHORT).show()
+//            }
 
         }
 
@@ -263,12 +313,21 @@ class StoryDownloader @Inject constructor(
 
             val errorBody = e.response()?.errorBody()?.string()
             Log.e("API_ERROR", "Error body: $errorBody")
-            Toast.makeText(context, context.resources.getString(R.string.cookie_expired), Toast.LENGTH_SHORT).show()
+            withContext(Dispatchers.Main) {
+                Toast.makeText(
+                    context,
+                    context.resources.getString(R.string.cookie_expired),
+                    Toast.LENGTH_SHORT
+                ).show()
+
+            }
             return mutableListOf()
         } catch (e: Exception) {
             Log.e("API_ERROR", "Exception: ${e.localizedMessage}")
-            Toast.makeText(context, e.localizedMessage, Toast.LENGTH_SHORT).show()
-
+//
+//            withContext(Dispatchers.Main) {
+//                Toast.makeText(context, e.localizedMessage, Toast.LENGTH_SHORT).show()
+//            }
             return mutableListOf()
         }
 

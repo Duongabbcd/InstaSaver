@@ -41,13 +41,13 @@ class InstagramRepository @Inject constructor(private val postDao: PostDao,priva
     fun fetchVideoPostByUser(
         userName: String,
     ) : List<Post> {
-        return postDao.getPhotoPostsByUsername(userName)
+        return postDao.getVideoPostsByUsername(userName)
     }
 
     fun fetchPhotoPostByUser(
         userName: String,
     ) : List<Post> {
-        return postDao.getVideoPostsByUsername(userName)
+        return postDao.getPhotoPostsByUsername(userName)
     }
 
     fun fetchCarouselPostByUser(

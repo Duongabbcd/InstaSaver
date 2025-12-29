@@ -178,7 +178,6 @@
         android:scrollbars="vertical"
         android:fadeScrollbars="false"
         android:textColor="@color/white"
-        android:text="@string/omnicoder_caption"
        style="@style/CustomTextStyleMedium12sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/viewMore"

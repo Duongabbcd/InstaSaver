@@ -18,6 +18,7 @@ class DownloadsViewModel @Inject constructor(private val instagramRepository: In
     val postByUser : LiveData<List<Post>> = _postByUser
 
     fun fetchPostsByUser(userName: String, isVideo: Boolean, isPhoto: Boolean, isCarousel: Boolean) {
+        println("fetchPostsByUser: $userName and $isVideo and $isPhoto and $isCarousel")
         viewModelScope.launch {
             _postByUser.value = instagramRepository.fetchPostByUser(userName)
 

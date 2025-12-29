@@ -67,6 +67,19 @@
         tools:listitem="@layout/item_reel_ray" />
 
     <TextView
+        android:id="@+id/noHighlightStories"
+        android:gravity="center"
+        android:paddingVertical="@dimen/_10sdp"
+        style="@style/CustomTextStyleSemiBold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/storyHighlightView"
+        app:layout_constraintTop_toTopOf="@id/storyHighlightView"
+        android:text="@string/no_highlight_stories"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <TextView
         android:id="@+id/currentStories"
         android:layout_marginTop="@dimen/_10sdp"
         android:layout_marginStart="@dimen/_10sdp"
@@ -90,6 +103,19 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/currentStories" />
+
+    <TextView
+        android:id="@+id/noCurrentStories"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:gravity="center"
+        style="@style/CustomTextStyleSemiBold"
+        app:layout_constraintBottom_toTopOf="@+id/downloadButton"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/currentStories"
+        android:text="@string/no_current_stories"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
 
     <Button

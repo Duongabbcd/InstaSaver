@@ -74,5 +74,8 @@
     <string name="select_none">You still have not selected any file yet</string>
     <string name="file_already_exist">This post is already in your device</string>
     <string name="file_downloaded_successfully">Your post is downloaded successfully</string>
+    <!--    downloaded stories-->
+    <string name="no_highlight_stories">No highlight stories</string>
+    <string name="no_current_stories">No current stories</string>
 
 </resources>
